@@ -1,0 +1,21 @@
+import type { CollectionConfig } from "payload";
+
+export const Media: CollectionConfig = {
+  slug: "media",
+  access: {
+    read: () => true,
+  },
+  upload: {
+    mimeTypes: ["image/*", "audio/*"],
+  },
+  fields: [
+    {
+      name: "alt",
+      type: "text",
+    },
+    {
+      name: "caption",
+      type: "text",
+    },
+  ],
+};
