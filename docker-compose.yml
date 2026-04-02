@@ -6,8 +6,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-sankyume}
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -15,6 +13,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - internal
 
   app:
     build:
@@ -22,9 +22,10 @@ services:
       dockerfile: Dockerfile
       args:
         DATABASE_URI: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-sankyume}
+        NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:-http://localhost:3000}
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
       DATABASE_URI: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-sankyume}
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:-change-me-in-production}
@@ -38,6 +39,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - coolify
+      - internal
+
+networks:
+  coolify:
+    external: true
+  internal:
+    driver: bridge
 
 volumes:
   postgres_data:
