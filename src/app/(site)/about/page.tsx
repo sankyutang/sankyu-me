@@ -47,6 +47,7 @@ export default async function AboutPage() {
           title={settings.newsletterTitle}
           description={settings.newsletterDescription}
           url={settings.newsletterUrl}
+          buttonLabel={settings.newsletterButtonLabel}
         />
       ) : null}
     </div>

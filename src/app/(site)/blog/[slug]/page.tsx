@@ -142,6 +142,7 @@ export default async function BlogPostPage({ params }: Props) {
           title={settings.newsletterTitle}
           description={settings.newsletterDescription}
           url={settings.newsletterUrl}
+          buttonLabel={settings.newsletterButtonLabel}
         />
       ) : null}
 

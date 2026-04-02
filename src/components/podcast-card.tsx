@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getMediaUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
@@ -33,34 +32,41 @@ export function PodcastCard({
       : null;
 
   return (
-    <Link href={`/podcast/${slug}`} className={cn("group block h-full", className)}>
-      <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
-        <div className="bg-muted relative aspect-square w-full max-h-48 overflow-hidden sm:aspect-[16/9] sm:max-h-none">
-          {img ? (
-            <Image
-              src={img}
-              alt=""
-              fill
-              className="object-cover transition-transform group-hover:scale-[1.02]"
-              sizes="(max-width:768px) 100vw, 400px"
-            />
-          ) : null}
+    <article className={cn("flex h-full flex-col", className)}>
+      <Link
+        href={`/podcast/${slug}`}
+        className="bg-muted relative block aspect-square w-full max-h-48 overflow-hidden rounded-xl sm:aspect-[16/9] sm:max-h-none"
+      >
+        {img ? (
+          <Image
+            src={img}
+            alt=""
+            fill
+            className="object-cover transition-transform hover:scale-[1.02]"
+            sizes="(max-width:768px) 100vw, 400px"
+          />
+        ) : null}
+      </Link>
+      <div className="mt-4 flex flex-1 flex-col gap-2">
+        <div className="text-muted-foreground flex flex-wrap gap-2 text-xs">
+          {date ? <span>{date}</span> : null}
+          {duration ? <span>{duration}</span> : null}
         </div>
-        <CardHeader className="space-y-2">
-          <div className="text-muted-foreground flex flex-wrap gap-2 text-xs">
-            {date ? <span>{date}</span> : null}
-            {duration ? <span>{duration}</span> : null}
-          </div>
-          <h3 className="text-lg font-semibold leading-snug tracking-tight group-hover:underline">
+        <Link href={`/podcast/${slug}`} className="group">
+          <h3 className="text-foreground text-base font-semibold leading-snug tracking-tight group-hover:underline">
             {title}
           </h3>
-        </CardHeader>
+        </Link>
         {excerpt ? (
-          <CardContent>
-            <p className="text-muted-foreground line-clamp-2 text-sm">{excerpt}</p>
-          </CardContent>
+          <p className="text-muted-foreground line-clamp-3 text-sm leading-relaxed">{excerpt}</p>
         ) : null}
-      </Card>
-    </Link>
+        <Link
+          href={`/podcast/${slug}`}
+          className="text-foreground mt-auto inline-flex text-sm font-medium hover:underline"
+        >
+          收听单集 →
+        </Link>
+      </div>
+    </article>
   );
 }

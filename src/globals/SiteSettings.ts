@@ -80,6 +80,53 @@ export const SiteSettings: GlobalConfig = {
       admin: { description: "Substack or other external subscribe URL." },
     },
     {
+      name: "newsletterButtonLabel",
+      type: "text",
+      admin: { description: "CTA label on the newsletter block (e.g. Subscribe on Substack)." },
+    },
+    {
+      name: "introHeadline",
+      type: "text",
+      admin: { description: "Homepage intro title; falls back to Hero title if empty." },
+    },
+    {
+      name: "introBody",
+      type: "textarea",
+      admin: { description: "Homepage intro paragraph; falls back to Hero subtitle if empty." },
+    },
+    {
+      name: "introAvatar",
+      type: "upload",
+      relationTo: "media",
+      admin: {
+        description:
+          "Homepage brand mark (e.g. small logo ~34px) shown above the intro; not a large portrait.",
+      },
+    },
+    {
+      name: "introNameHighlight",
+      type: "text",
+      admin: {
+        description:
+          "Optional phrase in the headline to emphasize (e.g. your name). Must appear inside Intro headline text.",
+      },
+    },
+    {
+      name: "footerEmoji",
+      type: "text",
+      admin: { description: "Optional emoji shown on the minimal homepage footer (e.g. 👻)." },
+    },
+    {
+      name: "newsletterSponsorLabel",
+      type: "text",
+      admin: { description: "Optional inline sponsor link label (e.g. GitHub Sponsors)." },
+    },
+    {
+      name: "newsletterSponsorUrl",
+      type: "text",
+      admin: { description: "URL for the optional sponsor link next to newsletter copy." },
+    },
+    {
       name: "heroTitle",
       type: "text",
     },

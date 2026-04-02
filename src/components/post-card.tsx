@@ -1,8 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getMediaUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
@@ -38,35 +36,42 @@ export function PostCard({
       : null;
 
   return (
-    <Link href={`/blog/${slug}`} className={cn("group block h-full", className)}>
-      <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
-        <div className="bg-muted relative aspect-[16/9] w-full overflow-hidden">
-          {img ? (
-            <Image
-              src={img}
-              alt=""
-              fill
-              className="object-cover transition-transform group-hover:scale-[1.02]"
-              sizes="(max-width:768px) 100vw, 33vw"
-            />
-          ) : null}
+    <article className={cn("flex h-full flex-col", className)}>
+      <Link
+        href={`/blog/${slug}`}
+        className="bg-muted relative block aspect-[16/9] w-full overflow-hidden rounded-xl"
+      >
+        {img ? (
+          <Image
+            src={img}
+            alt=""
+            fill
+            className="object-cover transition-transform hover:scale-[1.02]"
+            sizes="(max-width:768px) 100vw, 33vw"
+          />
+        ) : null}
+      </Link>
+      <div className="mt-4 flex flex-1 flex-col gap-2">
+        <div className="text-muted-foreground flex flex-wrap gap-x-2 gap-y-1 text-xs">
+          {category?.name ? <span>{category.name}</span> : null}
+          {date ? <span>{date}</span> : null}
+          {readingTime != null ? <span>{readingTime} min read</span> : null}
         </div>
-        <CardHeader className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            {category?.name ? <Badge variant="secondary">{category.name}</Badge> : null}
-            {date ? <span>{date}</span> : null}
-            {readingTime != null ? <span>{readingTime} min read</span> : null}
-          </div>
-          <h3 className="text-lg font-semibold leading-snug tracking-tight group-hover:underline">
+        <Link href={`/blog/${slug}`} className="group">
+          <h3 className="text-foreground text-base font-semibold leading-snug tracking-tight group-hover:underline">
             {title}
           </h3>
-        </CardHeader>
+        </Link>
         {excerpt ? (
-          <CardContent>
-            <p className="text-muted-foreground line-clamp-2 text-sm leading-relaxed">{excerpt}</p>
-          </CardContent>
+          <p className="text-muted-foreground line-clamp-3 text-sm leading-relaxed">{excerpt}</p>
         ) : null}
-      </Card>
-    </Link>
+        <Link
+          href={`/blog/${slug}`}
+          className="text-foreground mt-auto inline-flex text-sm font-medium hover:underline"
+        >
+          阅读全文 →
+        </Link>
+      </div>
+    </article>
   );
 }

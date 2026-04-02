@@ -12,6 +12,8 @@ import { Pages } from "./collections/Pages";
 import { Podcasts } from "./collections/Podcasts";
 import { Posts } from "./collections/Posts";
 import { Products } from "./collections/Products";
+import { Videos } from "./collections/Videos";
+import { Works } from "./collections/Works";
 import { Tags } from "./collections/Tags";
 import { Users } from "./collections/Users";
 import { SiteSettings } from "./globals/SiteSettings";
@@ -63,7 +65,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Categories, Tags, Posts, Products, Podcasts, Pages],
+  collections: [Users, Media, Categories, Tags, Posts, Products, Podcasts, Works, Videos, Pages],
   globals: [SiteSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",

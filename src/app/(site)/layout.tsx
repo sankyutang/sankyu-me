@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
-import { SiteFooter } from "@/components/site-footer";
+import { SiteFooterShell } from "@/components/site-footer-shell";
 import { SiteHeader } from "@/components/site-header";
+import { SiteMain } from "@/components/site-main";
 import { Providers } from "@/components/providers";
 import { defaultMainNav } from "@/lib/nav";
 import { getPayloadClient } from "@/lib/payload";
@@ -33,9 +34,11 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const payload = await getPayloadClient();
   let settings: {
     siteName?: string | null;
+    siteDescription?: string | null;
     mainNav?: { label: string; href: string }[] | null;
     footerNav?: { label: string; href: string }[] | null;
     socialLinks?: { platform: string; url: string }[] | null;
+    footerEmoji?: string | null;
   } | null = null;
 
   try {
@@ -56,8 +59,14 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
           <SiteHeader siteName={siteName} mainNav={mainNav} />
-          <div className="min-h-[calc(100vh-3.5rem)]">{children}</div>
-          <SiteFooter siteName={siteName} footerNav={footerNav} socialLinks={socialLinks} />
+          <SiteMain>{children}</SiteMain>
+          <SiteFooterShell
+            siteName={siteName}
+            siteDescription={settings?.siteDescription}
+            footerNav={footerNav}
+            socialLinks={socialLinks}
+            footerEmoji={settings?.footerEmoji}
+          />
         </Providers>
       </body>
     </html>

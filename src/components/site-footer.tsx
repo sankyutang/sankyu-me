@@ -2,16 +2,47 @@ import Link from "next/link";
 
 import { Separator } from "@/components/ui/separator";
 import type { NavItem } from "@/lib/nav";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { SocialIcon } from "@/components/icons/social-icons";
 
-export function SiteFooter({
-  siteName,
-  footerNav,
-  socialLinks,
-}: {
-  siteName: string;
-  footerNav: NavItem[];
-  socialLinks: { platform: string; url: string }[];
-}) {
+export function SiteFooter(
+  props:
+    | {
+        variant: "minimal";
+        siteName: string;
+        footerEmoji?: string | null;
+      }
+    | {
+        variant: "full";
+        siteName: string;
+        siteDescription?: string | null;
+        footerNav: NavItem[];
+        socialLinks: { platform: string; url: string }[];
+      },
+) {
+  if (props.variant === "minimal") {
+    const emoji = props.footerEmoji?.trim();
+    return (
+      <footer className="border-border mt-24 border-t">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-10 md:px-[60px]">
+          <p className="text-muted-foreground text-xs">
+            {props.siteName} © {new Date().getFullYear()}
+          </p>
+          <div className="flex items-center gap-2">
+            {emoji ? (
+              <span className="text-muted-foreground text-xs" aria-hidden>
+                {emoji}
+              </span>
+            ) : null}
+            <ThemeToggle />
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
+  const { siteName, siteDescription, footerNav, socialLinks } = props;
+
   return (
     <footer className="border-border mt-24 border-t">
       <div className="container mx-auto max-w-6xl px-4 py-12">
@@ -19,7 +50,8 @@ export function SiteFooter({
           <div>
             <p className="font-semibold">{siteName}</p>
             <p className="text-muted-foreground mt-2 max-w-sm text-sm">
-              One-person company, systems, and leverage — built in public.
+              {siteDescription?.trim() ||
+                "One-person company, systems, and leverage — built in public."}
             </p>
           </div>
           {socialLinks.length > 0 ? (
@@ -30,9 +62,10 @@ export function SiteFooter({
                   href={s.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                  className="text-muted-foreground hover:text-foreground inline-flex items-center transition-colors"
                 >
-                  {s.platform}
+                  <SocialIcon platform={s.platform} className="size-[18px] shrink-0" />
+                  <span className="sr-only">{s.platform}</span>
                 </a>
               ))}
             </div>
@@ -51,7 +84,9 @@ export function SiteFooter({
               </Link>
             ))}
           </nav>
-          <p className="text-muted-foreground text-xs">© {new Date().getFullYear()} {siteName}</p>
+          <p className="text-muted-foreground text-xs">
+            © {new Date().getFullYear()} {siteName}
+          </p>
         </div>
       </div>
     </footer>

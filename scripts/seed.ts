@@ -43,6 +43,8 @@ async function seed() {
         { label: "Home", href: "/" },
         { label: "Blog", href: "/blog" },
         { label: "Products", href: "/products" },
+        { label: "Works", href: "/works" },
+        { label: "Videos", href: "/videos" },
         { label: "Podcast", href: "/podcast" },
         { label: "About", href: "/about" },
         { label: "Now", href: "/now" },
@@ -126,6 +128,37 @@ async function seed() {
         },
       });
     }
+  }
+
+  const existingWorks = await payload.find({ collection: "works", limit: 1 });
+  if (existingWorks.docs.length === 0) {
+    await payload.create({
+      collection: "works",
+      data: {
+        title: "示例作品",
+        slug: "sample-work",
+        summary: "在后台添加更多作品条目。",
+        status: "published",
+        publishedAt: new Date().toISOString(),
+        featured: true,
+        content: emptyLexical,
+      },
+    });
+  }
+
+  const existingVideos = await payload.find({ collection: "videos", limit: 1 });
+  if (existingVideos.docs.length === 0) {
+    await payload.create({
+      collection: "videos",
+      data: {
+        title: "示例视频",
+        platform: "youtube",
+        videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        description: "替换为你在 YouTube 或 Bilibili 的真实链接。",
+        status: "published",
+        publishedAt: new Date().toISOString(),
+      },
+    });
   }
 
   console.log("Seed completed.");
