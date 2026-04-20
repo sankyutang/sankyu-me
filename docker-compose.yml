@@ -39,6 +39,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    ports:
+      - "${APP_PORT:-3000}:3000"
     networks:
       - coolify
       - internal
