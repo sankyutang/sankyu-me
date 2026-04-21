@@ -1,0 +1,87 @@
+---
+import type { NavItem } from '@/lib/nav'
+import ThemeToggle from '@/components/ThemeToggle.astro'
+
+interface Props {
+  siteName: string
+  mainNav: NavItem[]
+  currentPath: string
+}
+
+const { siteName, mainNav, currentPath } = Astro.props
+---
+
+<header class="border-border bg-background/80 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-b backdrop-blur">
+  <div class="container mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
+    <a href="/" class="font-semibold tracking-tight">{siteName}</a>
+
+    <nav class="hidden items-center gap-1 md:flex">
+      {mainNav.map((item) => (
+        <a
+          href={item.href}
+          class:list={[
+            'hover:bg-accent rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+            currentPath === item.href && 'bg-accent text-accent-foreground',
+          ]}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="flex items-center gap-1">
+      <ThemeToggle />
+      <button
+        id="mobile-menu-btn"
+        class="hover:bg-muted inline-flex size-8 items-center justify-center rounded-lg border border-border md:hidden"
+        aria-label="Open menu"
+      >
+        <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div id="mobile-menu" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/10 backdrop-blur-xs" id="mobile-menu-overlay"></div>
+  <div class="absolute inset-y-0 right-0 w-[min(100%,320px)] bg-popover border-l border-border p-4 shadow-lg">
+    <div class="flex items-center justify-between mb-6">
+      <span class="font-medium">Menu</span>
+      <button id="mobile-menu-close" class="hover:bg-muted inline-flex size-7 items-center justify-center rounded-lg" aria-label="Close menu">
+        <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <nav class="flex flex-col gap-1">
+      {mainNav.map((item) => (
+        <a
+          href={item.href}
+          class:list={[
+            'hover:bg-accent rounded-lg px-3 py-2 text-sm font-medium',
+            currentPath === item.href && 'bg-accent',
+          ]}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+</div>
+
+<script>
+  const btn = document.getElementById('mobile-menu-btn')
+  const menu = document.getElementById('mobile-menu')
+  const overlay = document.getElementById('mobile-menu-overlay')
+  const close = document.getElementById('mobile-menu-close')
+
+  function toggle() {
+    menu?.classList.toggle('hidden')
+  }
+
+  btn?.addEventListener('click', toggle)
+  overlay?.addEventListener('click', toggle)
+  close?.addEventListener('click', toggle)
+</script>

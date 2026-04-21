@@ -1,0 +1,68 @@
+---
+import '@/styles/global.css'
+import { defaultMainNav, type NavItem } from '@/lib/nav'
+import Header from '@/components/Header.astro'
+import Footer from '@/components/Footer.astro'
+
+interface Props {
+  title?: string
+  description?: string
+  ogImage?: string
+  canonicalUrl?: string
+  isHome?: boolean
+}
+
+const {
+  title,
+  description = 'Personal brand site — systems, AI workflows, indie building, and products.',
+  ogImage,
+  canonicalUrl,
+  isHome = false,
+} = Astro.props
+
+const siteName = 'sankyu.me'
+const pageTitle = title ? `${title} · ${siteName}` : siteName
+const siteUrl = Astro.site?.toString() || 'https://sankyu.me'
+const og = ogImage || `${siteUrl}/images/og-default.png`
+const canonical = canonicalUrl || new URL(Astro.url.pathname, siteUrl).toString()
+---
+
+<!doctype html>
+<html lang="zh-CN" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title={siteName} href="/blog/rss.xml" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={og} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={og} />
+    <script is:inline>
+      (function() {
+        const theme = localStorage.getItem('theme')
+        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark')
+        } else {
+          document.documentElement.classList.remove('dark')
+        }
+      })()
+    </script>
+  </head>
+  <body class="antialiased">
+    {!isHome && <Header siteName={siteName} mainNav={defaultMainNav} currentPath={Astro.url.pathname} />}
+    <main class={isHome ? 'min-h-screen' : 'min-h-[calc(100vh-3.5rem)]'}>
+      <slot />
+    </main>
+    <Footer siteName={siteName} isHome={isHome} />
+  </body>
+</html>

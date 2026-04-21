@@ -1,0 +1,25 @@
+---
+import Base from '@/layouts/Base.astro'
+import { createReader } from '@keystatic/core/reader'
+import keystaticConfig from '../../keystatic.config'
+
+const reader = createReader(process.cwd(), keystaticConfig)
+
+let page: any = null
+try {
+  page = await reader.collections.pages.read('now')
+} catch {}
+
+const content = page ? await page.content() : null
+---
+
+<Base title="Now" description={page?.seoDescription || 'What I am doing now.'}>
+  <div class="container mx-auto max-w-3xl px-4 py-12">
+    <h1 class="text-3xl font-semibold tracking-tight mb-8">Now</h1>
+    {content ? (
+      <div class="prose prose-neutral max-w-none dark:prose-invert" set:html={content} />
+    ) : (
+      <p class="text-muted-foreground">内容即将更新</p>
+    )}
+  </div>
+</Base>

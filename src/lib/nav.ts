@@ -1,4 +1,4 @@
-export type NavItem = { label: string; href: string };
+export type NavItem = { label: string; href: string }
 
 export const defaultMainNav: NavItem[] = [
   { label: "Home", href: "/" },
@@ -11,5 +11,4 @@ export const defaultMainNav: NavItem[] = [
   { label: "Now", href: "/now" },
   { label: "Uses", href: "/uses" },
   { label: "Links", href: "/links" },
-  { label: "Search", href: "/search" },
-];
+]

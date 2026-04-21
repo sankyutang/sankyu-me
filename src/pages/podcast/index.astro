@@ -1,0 +1,49 @@
+---
+import Base from '@/layouts/Base.astro'
+import { createReader } from '@keystatic/core/reader'
+import keystaticConfig from '../../../keystatic.config'
+
+const reader = createReader(process.cwd(), keystaticConfig)
+const allPodcasts = await reader.collections.podcasts.all()
+
+const podcasts = allPodcasts
+  .filter((p) => p.entry.status === 'published')
+  .sort((a, b) => {
+    const da = a.entry.publishedAt ? new Date(a.entry.publishedAt).getTime() : 0
+    const db = b.entry.publishedAt ? new Date(b.entry.publishedAt).getTime() : 0
+    return db - da
+  })
+---
+
+<Base title="Podcast" description="Podcast episodes.">
+  <div class="container mx-auto max-w-6xl px-4 py-12">
+    <h1 class="text-3xl font-semibold tracking-tight mb-8">Podcast</h1>
+
+    {podcasts.length === 0 ? (
+      <p class="text-muted-foreground">暂无播客</p>
+    ) : (
+      <div class="flex flex-col gap-6">
+        {podcasts.map((ep) => {
+          const date = ep.entry.publishedAt
+            ? new Date(ep.entry.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+            : null
+          return (
+            <article class="border border-border rounded-xl p-5 flex gap-4">
+              {ep.entry.coverImage && (
+                <img src={ep.entry.coverImage} alt="" class="size-20 shrink-0 rounded-lg object-cover" />
+              )}
+              <div class="flex flex-1 flex-col gap-1">
+                <a href={`/podcast/${ep.slug}`} class="font-semibold hover:underline">{ep.entry.title}</a>
+                <div class="text-muted-foreground text-xs flex gap-2">
+                  {date && <span>{date}</span>}
+                  {ep.entry.duration && <span>{ep.entry.duration}</span>}
+                </div>
+                {ep.entry.excerpt && <p class="text-muted-foreground text-sm mt-1 line-clamp-2">{ep.entry.excerpt}</p>}
+              </div>
+            </article>
+          )
+        })}
+      </div>
+    )}
+  </div>
+</Base>

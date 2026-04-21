@@ -1,0 +1,45 @@
+---
+import Base from '@/layouts/Base.astro'
+import { createReader } from '@keystatic/core/reader'
+import keystaticConfig from '../../../keystatic.config'
+
+const reader = createReader(process.cwd(), keystaticConfig)
+const allVideos = await reader.collections.videos.all()
+
+const videos = allVideos
+  .filter((v) => v.entry.status === 'published')
+  .sort((a, b) => {
+    const da = a.entry.publishedAt ? new Date(a.entry.publishedAt).getTime() : 0
+    const db = b.entry.publishedAt ? new Date(b.entry.publishedAt).getTime() : 0
+    return db - da
+  })
+---
+
+<Base title="Videos" description="Video content on YouTube and Bilibili.">
+  <div class="container mx-auto max-w-6xl px-4 py-12">
+    <h1 class="text-3xl font-semibold tracking-tight mb-8">Videos</h1>
+
+    {videos.length === 0 ? (
+      <p class="text-muted-foreground">暂无视频</p>
+    ) : (
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {videos.map((video) => (
+          <a href={video.entry.videoUrl || '#'} target="_blank" rel="noreferrer" class="group block">
+            <div class="bg-muted relative aspect-video overflow-hidden rounded-xl">
+              {video.entry.thumbnail && (
+                <img src={video.entry.thumbnail} alt="" class="size-full object-cover transition-transform group-hover:scale-[1.02]" />
+              )}
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="flex size-12 items-center justify-center rounded-full bg-black/60 text-white">▶</div>
+              </div>
+            </div>
+            <h3 class="mt-3 text-sm font-semibold group-hover:underline">{video.entry.title}</h3>
+            {video.entry.description && (
+              <p class="text-muted-foreground mt-1 line-clamp-2 text-xs">{video.entry.description}</p>
+            )}
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
+</Base>
