@@ -2,5 +2,10 @@
   "siteName": "sankyu.me",
   "siteUrl": "https://sankyu.me",
   "mainNav": [],
-  "socialLinks": []
+  "socialLinks": [
+    {
+      "platform": "X",
+      "url": "https://x.com/imsankyu"
+    }
+  ]
 }
