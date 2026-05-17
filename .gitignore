@@ -41,3 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 dist
+
+**/node_modules
+**/.astro
+**/.vite
+**/.vite/deps/*
