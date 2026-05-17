@@ -1,0 +1,31 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro'
+
+const env = Astro.locals.runtime?.env
+const db = env?.DB
+const counts: Record<string, number> = {}
+if (db) {
+  for (const t of ['posts', 'pages', 'works', 'products', 'podcasts', 'videos']) {
+    const r = await db.prepare(`SELECT COUNT(*) as c FROM ${t}`).first<{ c: number }>()
+    counts[t] = r?.c ?? 0
+  }
+}
+const cards = [
+  { label: 'Posts', href: '/admin/posts', count: counts.posts ?? 0 },
+  { label: 'Pages', href: '/admin/pages', count: counts.pages ?? 0 },
+  { label: 'Works', href: '/admin/works', count: counts.works ?? 0 },
+  { label: 'Products', href: '/admin/products', count: counts.products ?? 0 },
+  { label: 'Podcasts', href: '/admin/podcasts', count: counts.podcasts ?? 0 },
+  { label: 'Videos', href: '/admin/videos', count: counts.videos ?? 0 },
+]
+---
+<AdminLayout title="Dashboard">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {cards.map((c) => (
+      <a href={c.href} class="border border-border rounded p-5 hover:bg-muted/40">
+        <div class="text-sm text-muted-foreground">{c.label}</div>
+        <div class="mt-2 text-3xl font-semibold">{c.count}</div>
+      </a>
+    ))}
+  </div>
+</AdminLayout>

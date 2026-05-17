@@ -1,0 +1,29 @@
+---
+import type { Post, SiteSettings } from '@/lib/db/types'
+interface Props {
+  settings: SiteSettings
+  env: { siteUrl: string; assetBase: string }
+  posts: Post[]
+}
+const { settings, env, posts } = Astro.props
+const base = (settings.siteUrl || env.siteUrl).replace(/\/$/, '')
+const escapeXml = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>{escapeXml(settings.siteName)}</title>
+    <link>{base}</link>
+    <description>{escapeXml(settings.siteDescription || '')}</description>
+    {posts.map((p) => (
+      <item>
+        <title>{escapeXml(p.title)}</title>
+        <link>{base}/blog/{p.slug}</link>
+        <guid isPermaLink="true">{base}/blog/{p.slug}</guid>
+        {p.published_at && <pubDate>{new Date(p.published_at).toUTCString()}</pubDate>}
+        {p.excerpt && <description>{escapeXml(p.excerpt)}</description>}
+      </item>
+    ))}
+  </channel>
+</rss>

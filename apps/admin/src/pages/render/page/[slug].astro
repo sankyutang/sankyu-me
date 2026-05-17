@@ -1,0 +1,11 @@
+---
+import PageDetail from '@/templates/PageDetail.astro'
+import { getPage, getSiteSettings } from '@/lib/db/queries'
+const env = Astro.locals.runtime.env
+const slug = Astro.params.slug as string
+const page = await getPage(env.DB, slug)
+if (!page) return new Response('not found', { status: 404 })
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+---
+<PageDetail settings={settings} env={envProps} page={page} />

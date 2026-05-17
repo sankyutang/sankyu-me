@@ -1,0 +1,130 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro'
+import { SCHEMAS } from '@/lib/admin/schemas'
+import type { Collection } from '@/lib/db/types'
+
+const { collection, id } = Astro.params as { collection: Collection; id: string }
+const schema = SCHEMAS[collection]
+if (!schema) return Astro.redirect('/admin')
+
+const env = Astro.locals.runtime?.env
+const db = env!.DB
+const isNew = id === 'new'
+const row: Record<string, any> = isNew
+  ? Object.fromEntries(schema.fields.map((f) => [f.key, f.defaultValue ?? '']))
+  : (await db.prepare(`SELECT * FROM ${collection} WHERE id = ?1`).bind(Number(id)).first()) ?? {}
+if (!isNew && Object.keys(row).length === 0) return Astro.redirect(`/admin/${collection}`)
+---
+<AdminLayout title={`${schema.label} · ${isNew ? '新建' : row.title || row.name || '#' + id}`}>
+  <form id="entry-form" class="space-y-5">
+    <input type="hidden" name="__collection" value={collection} />
+    <input type="hidden" name="__id" value={isNew ? '' : id} />
+    {schema.fields.map((f) => {
+      const v = row[f.key] ?? ''
+      return (
+        <div>
+          <label class="block text-sm font-medium mb-1">{f.label}</label>
+          {f.help && <p class="text-xs text-muted-foreground mb-1">{f.help}</p>}
+          {(f.type === 'text' || f.type === 'url') && (
+            <input name={f.key} type={f.type === 'url' ? 'url' : 'text'} value={v}
+              class="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
+          )}
+          {f.type === 'number' && (
+            <input name={f.key} type="number" value={v}
+              class="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
+          )}
+          {f.type === 'datetime' && (
+            <input name={f.key} type="datetime-local" value={v ? String(v).slice(0,16) : ''}
+              class="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
+          )}
+          {f.type === 'checkbox' && (
+            <input name={f.key} type="checkbox" checked={!!Number(v)} class="ml-1" />
+          )}
+          {f.type === 'select' && (
+            <select name={f.key} class="bg-background border border-border rounded px-3 py-2 text-sm">
+              {f.options!.map((o) => <option value={o.value} selected={String(v) === o.value}>{o.label}</option>)}
+            </select>
+          )}
+          {f.type === 'textarea' && (
+            <textarea name={f.key} rows="3" class="w-full bg-background border border-border rounded px-3 py-2 text-sm">{v}</textarea>
+          )}
+          {f.type === 'markdoc' && (
+            <textarea name={f.key} rows="20" class="w-full font-mono bg-background border border-border rounded px-3 py-2 text-sm">{v}</textarea>
+          )}
+          {f.type === 'json' && (
+            <textarea name={f.key} rows="4" class="w-full font-mono bg-background border border-border rounded px-3 py-2 text-sm">{v || (f.defaultValue ?? '[]')}</textarea>
+          )}
+          {f.type === 'image' && (
+            <div class="flex gap-2 items-center">
+              <input name={f.key} type="text" value={v} placeholder="https://..." class="flex-1 bg-background border border-border rounded px-3 py-2 text-sm" />
+              <input type="file" accept="image/*" data-image-upload-for={f.key} class="text-xs" />
+            </div>
+          )}
+        </div>
+      )
+    })}
+
+    <div class="flex items-center gap-3 pt-4 border-t border-border">
+      <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded text-sm">保存并发布</button>
+      {!isNew && (
+        <button type="button" id="btn-delete" class="px-4 py-2 border border-destructive text-destructive rounded text-sm">删除</button>
+      )}
+      <a href={`/admin/${collection}`} class="text-sm text-muted-foreground">取消</a>
+      <span id="form-status" class="text-sm text-muted-foreground"></span>
+    </div>
+  </form>
+
+  <script type="module" is:inline define:vars={{ collection, id: isNew ? null : id }}>
+    const form = document.getElementById('entry-form')
+    const status = document.getElementById('form-status')
+    const btnDelete = document.getElementById('btn-delete')
+
+    // image uploads
+    document.querySelectorAll('input[data-image-upload-for]').forEach((el) => {
+      el.addEventListener('change', async (e) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        const field = el.getAttribute('data-image-upload-for')
+        status.textContent = '上传中...'
+        const fd = new FormData()
+        fd.append('file', file)
+        const r = await fetch('/api/uploads/r2', { method: 'POST', body: fd })
+        if (!r.ok) { status.textContent = '上传失败: ' + (await r.text()); return }
+        const json = await r.json()
+        const target = form.querySelector(`input[name="${field}"]`)
+        if (target) target.value = json.src
+        status.textContent = '已上传'
+      })
+    })
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const fd = new FormData(form)
+      const data = {}
+      for (const [k, v] of fd.entries()) {
+        if (k.startsWith('__')) continue
+        data[k] = v
+      }
+      // checkboxes that are unchecked don't appear in FormData
+      form.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+        if (!fd.has(cb.name)) data[cb.name] = ''
+        else data[cb.name] = cb.checked ? 1 : 0
+      })
+      status.textContent = '保存中...'
+      const url = id ? `/api/collections/${collection}/${id}` : `/api/collections/${collection}`
+      const r = await fetch(url, { method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+      if (!r.ok) { status.textContent = '失败: ' + (await r.text()); return }
+      const json = await r.json()
+      status.textContent = `已发布 · 渲染 ${json.report?.rendered?.length ?? 0} · 失败 ${json.report?.failed?.length ?? 0}`
+      if (!id && json.id) location.href = `/admin/${collection}/${json.id}`
+    })
+
+    btnDelete?.addEventListener('click', async () => {
+      if (!confirm('确定删除？')) return
+      status.textContent = '删除中...'
+      const r = await fetch(`/api/collections/${collection}/${id}`, { method: 'DELETE' })
+      if (!r.ok) { status.textContent = '失败: ' + (await r.text()); return }
+      location.href = `/admin/${collection}`
+    })
+  </script>
+</AdminLayout>

@@ -2,7 +2,7 @@
 import Base from '@/layouts/Base.astro'
 import { createReader } from '@keystatic/core/reader'
 import keystaticConfig from '../../../keystatic.config'
-import Markdoc from '@markdoc/markdoc'
+import { renderMarkdocToHtml } from '@/lib/markdoc'
 
 export async function getStaticPaths() {
   const reader = createReader(process.cwd(), keystaticConfig)
@@ -18,7 +18,7 @@ if (!post) {
   return Astro.redirect('/404')
 }
 
-const content = await post.content()
+const content = renderMarkdocToHtml((await post.content()).node)
 const date = post.publishedAt
   ? new Date(post.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
   : null

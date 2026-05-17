@@ -1,0 +1,8 @@
+---
+import ProductsList from '@/templates/ProductsList.astro'
+import { getSiteSettings, listProducts } from '@/lib/db/queries'
+const env = Astro.locals.runtime.env
+const [settings, products] = await Promise.all([getSiteSettings(env.DB), listProducts(env.DB)])
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+---
+<ProductsList settings={settings} env={envProps} products={products} />

@@ -2,6 +2,7 @@
 import Base from '@/layouts/Base.astro'
 import { createReader } from '@keystatic/core/reader'
 import keystaticConfig from '../../keystatic.config'
+import { renderMarkdocToHtml } from '@/lib/markdoc'
 
 const reader = createReader(process.cwd(), keystaticConfig)
 
@@ -10,7 +11,7 @@ try {
   page = await reader.collections.pages.read('now')
 } catch {}
 
-const content = page ? await page.content() : null
+const content = page ? renderMarkdocToHtml((await page.content()).node) : null
 ---
 
 <Base title="Now" description={page?.seoDescription || 'What I am doing now.'}>

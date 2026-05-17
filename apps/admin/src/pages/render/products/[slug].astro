@@ -1,0 +1,11 @@
+---
+import ProductDetail from '@/templates/ProductDetail.astro'
+import { getProduct, getSiteSettings } from '@/lib/db/queries'
+const env = Astro.locals.runtime.env
+const slug = Astro.params.slug as string
+const product = await getProduct(env.DB, slug)
+if (!product) return new Response('not found', { status: 404 })
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+---
+<ProductDetail settings={settings} env={envProps} product={product} />

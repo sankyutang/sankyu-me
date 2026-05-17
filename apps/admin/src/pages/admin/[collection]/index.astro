@@ -1,0 +1,45 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro'
+import { SCHEMAS } from '@/lib/admin/schemas'
+import type { Collection } from '@/lib/db/types'
+
+const { collection } = Astro.params as { collection: Collection }
+const schema = SCHEMAS[collection]
+if (!schema) return Astro.redirect('/admin')
+
+const env = Astro.locals.runtime?.env
+const db = env!.DB
+const result = await db.prepare(`SELECT * FROM ${collection} ORDER BY id DESC`).all<Record<string, any>>()
+const rows = result.results ?? []
+---
+<AdminLayout title={schema.label}>
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-semibold">{schema.label} <span class="text-muted-foreground text-sm">({rows.length})</span></h2>
+    <a href={`/admin/${collection}/new`} class="px-3 py-2 bg-primary text-primary-foreground rounded text-sm">+ 新建</a>
+  </div>
+  <div class="border border-border rounded overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-muted text-left">
+        <tr>
+          {schema.listColumns.map((c) => <th class="px-3 py-2 font-medium">{c}</th>)}
+          <th class="px-3 py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr class="border-t border-border">
+            {schema.listColumns.map((c) => (
+              <td class="px-3 py-2">{String(r[c] ?? '')}</td>
+            ))}
+            <td class="px-3 py-2 text-right">
+              <a class="underline text-xs" href={`/admin/${collection}/${r.id}`}>编辑</a>
+            </td>
+          </tr>
+        ))}
+        {rows.length === 0 && (
+          <tr><td colspan={schema.listColumns.length + 1} class="px-3 py-8 text-center text-muted-foreground">暂无数据</td></tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</AdminLayout>

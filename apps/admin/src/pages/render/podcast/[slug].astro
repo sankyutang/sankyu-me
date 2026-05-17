@@ -1,0 +1,11 @@
+---
+import PodcastDetail from '@/templates/PodcastDetail.astro'
+import { getPodcast, getSiteSettings } from '@/lib/db/queries'
+const env = Astro.locals.runtime.env
+const slug = Astro.params.slug as string
+const podcast = await getPodcast(env.DB, slug)
+if (!podcast) return new Response('not found', { status: 404 })
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+---
+<PodcastDetail settings={settings} env={envProps} podcast={podcast} />
