@@ -1,4 +1,5 @@
 import { config, collection, singleton, fields } from '@keystatic/core'
+import { markdocComponents } from './src/lib/keystatic/r2-image'
 
 export default config({
   storage: {
@@ -48,7 +49,7 @@ export default config({
           label: '相关文章',
           itemLabel: (props) => props.value,
         }),
-        content: fields.markdoc({ label: '内容' }),
+        content: fields.markdoc({ label: '内容', components: markdocComponents }),
       },
     }),
 
@@ -67,7 +68,7 @@ export default config({
           directory: 'public/images/og',
           publicPath: '/images/og/',
         }),
-        content: fields.markdoc({ label: '内容' }),
+        content: fields.markdoc({ label: '内容', components: markdocComponents }),
       },
     }),
 
@@ -103,7 +104,7 @@ export default config({
           directory: 'public/images/og',
           publicPath: '/images/og/',
         }),
-        content: fields.markdoc({ label: '内容' }),
+        content: fields.markdoc({ label: '内容', components: markdocComponents }),
       },
     }),
 
@@ -178,7 +179,7 @@ export default config({
           directory: 'public/images/og',
           publicPath: '/images/og/',
         }),
-        content: fields.markdoc({ label: '内容' }),
+        content: fields.markdoc({ label: '内容', components: markdocComponents }),
       },
     }),
 
@@ -225,7 +226,7 @@ export default config({
           directory: 'public/images/og',
           publicPath: '/images/og/',
         }),
-        content: fields.markdoc({ label: '内容' }),
+        content: fields.markdoc({ label: '内容', components: markdocComponents }),
       },
     }),
 

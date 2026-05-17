@@ -1,41 +1,53 @@
 {
-  "name": "sankyume-web",
-  "version": "0.2.0",
+  "name": "sankyume-monorepo",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "dev:admin": "npm run dev -w @sankyume/admin",
+    "build:admin": "npm run build -w @sankyume/admin",
+    "dev:worker": "npm run dev -w @sankyume/site-worker",
+    "deploy:worker": "npm run deploy -w @sankyume/site-worker",
+    "import-content": "tsx scripts/import-content.ts",
+    "legacy:dev": "astro dev",
+    "legacy:build": "astro build"
   },
   "engines": {
     "node": "^18.20.2 || >=20.9.0"
   },
   "dependencies": {
-    "astro": "^5.9.0",
     "@astrojs/cloudflare": "^12.3.0",
-    "@astrojs/react": "^4.2.1",
     "@astrojs/mdx": "^4.2.4",
-    "@astrojs/sitemap": "^3.3.1",
+    "@astrojs/react": "^4.2.1",
     "@astrojs/rss": "^4.0.11",
-    "@markdoc/markdoc": "^0.4.0",
-    "@keystatic/core": "^0.5.45",
+    "@astrojs/sitemap": "^3.3.1",
+    "@aws-sdk/client-s3": "^3.1034.0",
     "@keystatic/astro": "^5.0.4",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "@keystatic/core": "^0.5.45",
+    "@markdoc/markdoc": "^0.4.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.0",
-    "tailwindcss": "^4.1.0",
+    "astro": "^5.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "tailwind-merge": "^3.5.0",
     "lucide-react": "^1.7.0",
-    "sharp": "^0.34.5"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "sharp": "^0.34.5",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^4.1.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250109.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "typescript": "^5"
+    "tsx": "^4.19.2",
+    "typescript": "^5",
+    "wrangler": "^3.99.0",
+    "yaml": "^2.9.0"
   }
 }

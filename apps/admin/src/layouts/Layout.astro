@@ -1,0 +1,86 @@
+---
+import '@/styles/global.css'
+import type { SiteSettings } from '@/lib/db/types'
+
+interface Props {
+  title?: string
+  description?: string
+  ogImage?: string
+  canonicalUrl?: string
+  pathname?: string
+  settings: SiteSettings
+  env: { siteUrl: string; assetBase: string }
+  isHome?: boolean
+}
+
+const {
+  title,
+  description,
+  ogImage,
+  canonicalUrl,
+  pathname = '/',
+  settings,
+  env,
+  isHome = false,
+} = Astro.props
+
+const siteName = settings.siteName || 'sankyu.me'
+const pageTitle = title ? `${title} · ${siteName}` : (settings.defaultSeoTitle || siteName)
+const desc = description || settings.defaultSeoDescription || settings.siteDescription
+const siteUrl = (settings.siteUrl || env.siteUrl || 'https://sankyu.me').replace(/\/$/, '')
+const og = ogImage || settings.defaultOgImage || `${siteUrl}/images/og-default.png`
+const canonical = canonicalUrl || `${siteUrl}${pathname}`
+const nav = settings.mainNav?.length ? settings.mainNav : []
+---
+<!doctype html>
+<html lang="zh-CN" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap.xml" />
+    <link rel="alternate" type="application/rss+xml" title={siteName} href="/rss.xml" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={desc} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:image" content={og} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline>
+      (function() {
+        const t = localStorage.getItem('theme')
+        if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark')
+        } else {
+          document.documentElement.classList.remove('dark')
+        }
+      })()
+    </script>
+  </head>
+  <body class="antialiased bg-background text-foreground">
+    {!isHome && (
+      <header class="border-b border-border">
+        <div class="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+          <a href="/" class="font-semibold">{siteName}</a>
+          <nav class="flex items-center gap-4 text-sm text-muted-foreground">
+            {nav.map((item) => (
+              <a href={item.href} class={pathname.startsWith(item.href) && item.href !== '/' ? 'text-foreground' : ''}>{item.label}</a>
+            ))}
+          </nav>
+        </div>
+      </header>
+    )}
+    <main class="min-h-[calc(100vh-7rem)]">
+      <slot />
+    </main>
+    <footer class="border-t border-border mt-16">
+      <div class="max-w-3xl mx-auto px-4 py-8 text-sm text-muted-foreground flex items-center justify-between">
+        <span>© {new Date().getFullYear()} {siteName}</span>
+        <span>{settings.footerEmoji || '👋'}</span>
+      </div>
+    </footer>
+  </body>
+</html>

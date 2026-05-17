@@ -1,0 +1,8 @@
+---
+import WorksList from '@/templates/WorksList.astro'
+import { getSiteSettings, listWorks } from '@/lib/db/queries'
+const env = Astro.locals.runtime.env
+const [settings, works] = await Promise.all([getSiteSettings(env.DB), listWorks(env.DB, { status: 'published' })])
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+---
+<WorksList settings={settings} env={envProps} works={works} />

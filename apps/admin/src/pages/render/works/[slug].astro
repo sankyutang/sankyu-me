@@ -1,0 +1,11 @@
+---
+import WorkDetail from '@/templates/WorkDetail.astro'
+import { getSiteSettings, getWork } from '@/lib/db/queries'
+const env = Astro.locals.runtime.env
+const slug = Astro.params.slug as string
+const work = await getWork(env.DB, slug)
+if (!work) return new Response('not found', { status: 404 })
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+---
+<WorkDetail settings={settings} env={envProps} work={work} />

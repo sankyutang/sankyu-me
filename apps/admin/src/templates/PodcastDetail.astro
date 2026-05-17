@@ -1,0 +1,29 @@
+---
+import Layout from '@/layouts/Layout.astro'
+import { renderMarkdoc } from '@/lib/markdoc'
+import type { Podcast, SiteSettings } from '@/lib/db/types'
+interface Props { settings: SiteSettings; env: any; podcast: Podcast }
+const { settings, env, podcast } = Astro.props
+const html = renderMarkdoc(podcast.content_markdoc)
+---
+<Layout
+  settings={settings}
+  env={env}
+  pathname={`/podcast/${podcast.slug}`}
+  title={podcast.title}
+  description={podcast.seo_description ?? podcast.excerpt ?? undefined}
+  ogImage={podcast.og_image ?? undefined}
+>
+  <article class="max-w-3xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-bold">{podcast.title}</h1>
+    {podcast.duration && <div class="mt-2 text-sm text-muted-foreground">{podcast.duration}</div>}
+    {podcast.audio_url && <audio src={podcast.audio_url} controls class="w-full mt-6" />}
+    {podcast.external_links?.length > 0 && (
+      <div class="mt-4 flex flex-wrap gap-3 text-sm">
+        {podcast.external_links.map((l) => <a href={l.url} class="underline underline-offset-4">{l.platform}</a>)}
+      </div>
+    )}
+    {podcast.excerpt && <p class="mt-6 text-lg text-muted-foreground">{podcast.excerpt}</p>}
+    <div class="prose prose-invert max-w-none mt-8" set:html={html} />
+  </article>
+</Layout>

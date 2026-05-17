@@ -1,0 +1,11 @@
+---
+import BlogDetail from '@/templates/BlogDetail.astro'
+import { getPost, getSiteSettings } from '@/lib/db/queries'
+const env = Astro.locals.runtime.env
+const slug = Astro.params.slug as string
+const post = await getPost(env.DB, slug)
+if (!post) return new Response('not found', { status: 404 })
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+---
+<BlogDetail settings={settings} env={envProps} post={post} />

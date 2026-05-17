@@ -1,0 +1,8 @@
+---
+import NotFound from '@/templates/NotFound.astro'
+import { getSiteSettings } from '@/lib/db/queries'
+const env = Astro.locals.runtime.env
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+---
+<NotFound settings={settings} env={envProps} />

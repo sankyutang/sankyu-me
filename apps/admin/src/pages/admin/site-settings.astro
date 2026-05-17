@@ -1,0 +1,32 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro'
+import { getSiteSettings } from '@/lib/db/queries'
+
+const env = Astro.locals.runtime?.env
+const settings = await getSiteSettings(env!.DB)
+const json = JSON.stringify(settings, null, 2)
+---
+<AdminLayout title="Site Settings">
+  <form id="form" class="space-y-4">
+    <p class="text-sm text-muted-foreground">直接编辑站点设置 JSON。保存后会触发整站重发。</p>
+    <textarea name="json" rows="24" class="w-full font-mono bg-background border border-border rounded px-3 py-2 text-sm">{json}</textarea>
+    <div class="flex items-center gap-3">
+      <button type="submit" class="px-4 py-2 bg-primary text-primary-foreground rounded text-sm">保存并发布</button>
+      <span id="status" class="text-sm text-muted-foreground"></span>
+    </div>
+  </form>
+  <script is:inline>
+    const f = document.getElementById('form')
+    const s = document.getElementById('status')
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      let parsed
+      try { parsed = JSON.parse(f.json.value) } catch (err) { s.textContent = 'JSON 错误: ' + err.message; return }
+      s.textContent = '保存中...'
+      const r = await fetch('/api/site-settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(parsed) })
+      if (!r.ok) { s.textContent = '失败: ' + (await r.text()); return }
+      const j = await r.json()
+      s.textContent = `已保存 · 渲染 ${j.report?.rendered?.length ?? 0}`
+    })
+  </script>
+</AdminLayout>

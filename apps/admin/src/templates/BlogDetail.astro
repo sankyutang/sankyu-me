@@ -1,0 +1,36 @@
+---
+import Layout from '@/layouts/Layout.astro'
+import { renderMarkdoc } from '@/lib/markdoc'
+import type { Post, SiteSettings } from '@/lib/db/types'
+interface Props { settings: SiteSettings; env: any; post: Post }
+const { settings, env, post } = Astro.props
+const html = renderMarkdoc(post.content_markdoc)
+---
+<Layout
+  settings={settings}
+  env={env}
+  pathname={`/blog/${post.slug}`}
+  title={post.title}
+  description={post.seo_description ?? post.excerpt ?? undefined}
+  ogImage={post.og_image ?? undefined}
+  canonicalUrl={post.canonical_url ?? undefined}
+>
+  <article class="max-w-3xl mx-auto px-4 py-10">
+    <header class="mb-8">
+      <h1 class="text-3xl md:text-4xl font-bold tracking-tight">{post.title}</h1>
+      <div class="mt-3 text-sm text-muted-foreground flex gap-3">
+        {post.published_at && <time>{new Date(post.published_at).toISOString().slice(0,10)}</time>}
+        {post.category && <span>· {post.category}</span>}
+        {post.reading_time && <span>· {post.reading_time} min</span>}
+      </div>
+      {post.excerpt && <p class="mt-4 text-lg text-muted-foreground">{post.excerpt}</p>}
+    </header>
+    {post.cover_image && <img src={post.cover_image} alt={post.title} class="rounded mb-8 w-full" />}
+    <div class="prose prose-invert max-w-none" set:html={html} />
+    {post.tags.length > 0 && (
+      <div class="mt-10 flex flex-wrap gap-2">
+        {post.tags.map((t) => <span class="text-xs px-2 py-1 rounded bg-muted text-muted-foreground">#{t}</span>)}
+      </div>
+    )}
+  </article>
+</Layout>
