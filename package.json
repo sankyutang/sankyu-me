@@ -14,6 +14,7 @@
     "deploy:worker": "npm run deploy -w @sankyume/site-worker",
     "import-content": "tsx scripts/import-content.ts",
     "legacy:dev": "astro dev",
+    "legacy:dev:mock": "PUBLIC_USE_MOCK=1 astro dev",
     "legacy:build": "astro build"
   },
   "engines": {

@@ -13,11 +13,14 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.3.0",
+    "@astrojs/react": "^4.2.1",
     "@markdoc/markdoc": "^0.4.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.0",
     "astro": "^5.9.0",
     "clsx": "^2.1.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "tailwindcss": "^4.1.0"
   }
 }

@@ -9,7 +9,6 @@ import {
   listPosts,
   listProducts,
   listVideos,
-  listWorks,
 } from '../db/queries'
 
 export interface PublishContext {
@@ -91,9 +90,8 @@ export async function publishEntity(
 }
 
 export async function publishFullSite(ctx: PublishContext): Promise<PublishReport> {
-  const [posts, works, products, podcasts, videos, pages] = await Promise.all([
+  const [posts, products, podcasts, videos, pages] = await Promise.all([
     listPosts(ctx.db),
-    listWorks(ctx.db),
     listProducts(ctx.db),
     listPodcasts(ctx.db),
     listVideos(ctx.db),
@@ -101,7 +99,6 @@ export async function publishFullSite(ctx: PublishContext): Promise<PublishRepor
   ])
   const plan = planFullSite({
     posts: posts.map((p) => p.slug),
-    works: works.map((w) => w.slug),
     products: products.map((p) => p.slug),
     podcasts: podcasts.map((p) => p.slug),
     videos: videos.map((v) => v.slug),

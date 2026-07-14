@@ -1,7 +1,6 @@
 export type Collection =
   | 'posts'
   | 'pages'
-  | 'works'
   | 'products'
   | 'podcasts'
   | 'videos'
@@ -32,24 +31,13 @@ export interface PageRow {
   id: number
   slug: string
   title: string
-  seo_title: string | null
-  seo_description: string | null
-  og_image: string | null
-  content_markdoc: string
-  created_at: string
-  updated_at: string
-}
-
-export interface WorkRow {
-  id: number
-  slug: string
-  title: string
-  summary: string | null
-  cover_image: string | null
-  status: 'draft' | 'published'
+  title_en: string | null
+  kind: 'topic' | 'collection' | 'static'
+  category: string | null
+  glyph: string | null
+  excerpt: string | null
+  cover_color: string | null
   published_at: string | null
-  featured: 0 | 1
-  external_url: string | null
   seo_title: string | null
   seo_description: string | null
   og_image: string | null
@@ -91,6 +79,10 @@ export interface PodcastRow {
   cover_image: string | null
   audio_url: string | null
   duration: string | null
+  ep: string | null
+  guest: string | null
+  cover_color: string | null
+  chapters: string
   published_at: string | null
   status: 'draft' | 'published'
   external_links: string
@@ -111,6 +103,11 @@ export interface VideoRow {
   video_url: string | null
   thumbnail: string | null
   description: string | null
+  duration: string | null
+  views: string | null
+  likes: string | null
+  tags: string
+  cover_color: string | null
   published_at: string | null
   status: 'draft' | 'published'
   created_at: string
@@ -137,7 +134,6 @@ export type Post = Omit<PostRow, 'tags' | 'related_posts' | 'featured'> & {
   related_posts: string[]
   featured: boolean
 }
-export type Work = Omit<WorkRow, 'featured'> & { featured: boolean }
 export type Product = Omit<
   ProductRow,
   'tags' | 'highlights' | 'audience' | 'faq' | 'related_posts' | 'featured'
@@ -149,9 +145,10 @@ export type Product = Omit<
   related_posts: string[]
   featured: boolean
 }
-export type Podcast = Omit<PodcastRow, 'external_links' | 'related_posts'> & {
+export type Podcast = Omit<PodcastRow, 'external_links' | 'related_posts' | 'chapters'> & {
   external_links: { platform: string; url: string }[]
   related_posts: string[]
+  chapters: { time: string; title: string }[]
 }
+export type Video = Omit<VideoRow, 'tags'> & { tags: string[] }
 export type Page = PageRow
-export type Video = VideoRow

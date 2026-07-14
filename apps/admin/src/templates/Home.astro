@@ -1,109 +1,130 @@
 ---
-import Layout from '@/layouts/Layout.astro'
-import type { Podcast, Post, Product, SiteSettings, Video, Work } from '@/lib/db/types'
+import PaperLayout from '@/layouts/PaperLayout.astro'
+import { Avatar, SocialRow, NowCard, SectionHeader } from '@/components/react/primitives'
+import { PostCardLarge } from '@/components/react/cards'
+import { ProductFeature } from '@/components/react/product'
+import { PodcastFeatureCard } from '@/components/react/podcast'
+import { VideoCard } from '@/components/react/video'
+import { PageTopicCard, PageCollectionCard } from '@/components/react/pagebits'
+import { pageHref } from '@/lib/links'
+import { adaptProfile, adaptSocial, adaptPost, adaptProduct, mediaFeed, adaptPage } from '@/lib/adapt'
+import type { Page, Podcast, Post, Product, SiteSettings, Video } from '@/lib/db/types'
 
 interface Props {
   settings: SiteSettings
   env: { siteUrl: string; assetBase: string }
   posts: Post[]
-  works: Work[]
   products: Product[]
   podcasts: Podcast[]
   videos: Video[]
+  pages: Page[]
 }
-const { settings, env, posts, works, products, podcasts, videos } = Astro.props
+const { settings, env, posts, products, podcasts, videos, pages } = Astro.props
 
-const featuredPosts = posts.filter((p) => p.featured).slice(0, 3).concat(
-  posts.filter((p) => !p.featured).slice(0, Math.max(0, 5 - posts.filter((p) => p.featured).length))
-).slice(0, 5)
-const featuredWorks = works.filter((w) => w.featured).concat(works.filter((w) => !w.featured)).slice(0, 4)
-const featuredProducts = products.filter((p) => p.featured).concat(products.filter((p) => !p.featured)).slice(0, 4)
+const profile = adaptProfile(settings)
+const social = adaptSocial(settings)
+const topPosts = posts.slice(0, 3).map((p) => adaptPost(p, env.assetBase))
+const allProducts = products.map((p) => adaptProduct(p, env.assetBase))
+const topProducts = allProducts.slice(0, 3)
+const topMedia = mediaFeed(podcasts, videos).slice(0, 3)
+const allPages = pages.map(adaptPage)
+const topics = allPages.filter((p) => p.kind === 'topic').slice(0, 2)
+const collections = allPages.filter((p) => p.kind === 'collection').slice(0, 1)
+const featuredPages = [...topics, ...collections]
+const staticPages = allPages.filter((p) => !p.kind || p.kind === 'static')
 ---
-<Layout settings={settings} env={env} pathname="/" isHome={true}>
-  <section class="max-w-3xl mx-auto px-4 pt-16 pb-12">
-    <h1 class="text-3xl md:text-4xl font-bold tracking-tight">{settings.introHeadline || settings.siteName}</h1>
-    {settings.introBody && <p class="mt-4 text-muted-foreground leading-relaxed whitespace-pre-line">{settings.introBody}</p>}
-    {settings.socialLinks?.length > 0 && (
-      <div class="mt-6 flex gap-4 text-sm">
-        {settings.socialLinks.map((s) => <a href={s.url} class="underline underline-offset-4">{s.platform}</a>)}
+
+<PaperLayout settings={settings} env={env} pathname="/" isHome>
+  <div class="max-w-6xl mx-auto px-5 md:px-8 pt-10 md:pt-14 pb-20">
+    <section class="reveal grid md:grid-cols-[auto_1fr] gap-7 md:gap-10 items-start">
+      <div class="flex md:block items-center gap-4">
+        <Avatar size={104} initial={profile.avatar_initial} />
+        <div class="md:hidden">
+          <div class="kicker">{profile.title_en}</div>
+          <h1 class="font-display text-[32px] leading-none mt-1" style="color: var(--ink-900);">{profile.name_en}</h1>
+        </div>
       </div>
+      <div class="min-w-0">
+        <div class="hidden md:flex items-baseline gap-3 flex-wrap">
+          <span class="kicker whitespace-nowrap">{profile.title_en}</span>
+          <span class="text-[12px] whitespace-nowrap" style="color: var(--ink-500); font-family: var(--font-mono);">{profile.location}</span>
+        </div>
+        <h1 class="hidden md:block font-display text-[72px] leading-[0.95] mt-1.5 tracking-tight" style="color: var(--ink-900);">
+          HI, I'm <span class="swoosh-underline" style="color: var(--accent);">{profile.name_en}</span>
+        </h1>
+        <p class="mt-4 md:mt-5 text-[16px] md:text-[17px] max-w-[58ch]" style="color: var(--ink-700); line-height: 1.75;">{profile.intro_zh}</p>
+        {profile.intro_en && (
+          <p class="mt-2 text-[13px] italic max-w-[58ch]" style="color: var(--ink-500); font-family: var(--font-serif-en);">{profile.intro_en}</p>
+        )}
+        <div class="mt-5"><SocialRow items={social} /></div>
+      </div>
+    </section>
+
+    {profile.now_zh && (
+      <div class="mt-10 md:mt-12 reveal"><NowCard now={profile.now_zh} /></div>
     )}
-  </section>
 
-  {featuredPosts.length > 0 && (
-    <section class="max-w-3xl mx-auto px-4 py-8">
-      <div class="flex items-baseline justify-between mb-4">
-        <h2 class="text-xl font-semibold">最新文章</h2>
-        <a href="/blog" class="text-sm text-muted-foreground">查看全部 →</a>
-      </div>
-      <ul class="space-y-3">
-        {featuredPosts.map((p) => (
-          <li>
-            <a href={`/blog/${p.slug}`} class="block hover:bg-muted/40 -mx-2 px-2 py-2 rounded">
-              <div class="font-medium">{p.title}</div>
-              {p.excerpt && <div class="text-sm text-muted-foreground line-clamp-2">{p.excerpt}</div>}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
+    <hr class="hand-divider my-14 md:my-20" />
 
-  {featuredProducts.length > 0 && (
-    <section class="max-w-3xl mx-auto px-4 py-8">
-      <div class="flex items-baseline justify-between mb-4">
-        <h2 class="text-xl font-semibold">产品</h2>
-        <a href="/products" class="text-sm text-muted-foreground">查看全部 →</a>
-      </div>
-      <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {featuredProducts.map((p) => (
-          <li class="border border-border rounded p-4">
-            <a href={`/products/${p.slug}`} class="font-medium hover:underline">{p.name}</a>
-            {p.summary && <p class="text-sm text-muted-foreground mt-1 line-clamp-2">{p.summary}</p>}
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
+    {topPosts.length > 0 && (
+      <>
+        <section class="reveal">
+          <SectionHeader en="Posts" kicker="WRITTEN" action="All essays" actionHref="/posts" />
+          <div class="grid md:grid-cols-3 gap-5 md:gap-6">{topPosts.map((p) => <PostCardLarge post={p} />)}</div>
+        </section>
+        <hr class="hand-divider my-14 md:my-20" />
+      </>
+    )}
 
-  {featuredWorks.length > 0 && (
-    <section class="max-w-3xl mx-auto px-4 py-8">
-      <div class="flex items-baseline justify-between mb-4">
-        <h2 class="text-xl font-semibold">作品</h2>
-        <a href="/works" class="text-sm text-muted-foreground">查看全部 →</a>
-      </div>
-      <ul class="space-y-2">
-        {featuredWorks.map((w) => (
-          <li>
-            <a href={`/works/${w.slug}`} class="hover:underline">{w.title}</a>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
-
-  {(podcasts.length > 0 || videos.length > 0) && (
-    <section class="max-w-3xl mx-auto px-4 py-8 grid grid-cols-1 sm:grid-cols-2 gap-8">
-      {podcasts.length > 0 && (
-        <div>
-          <h2 class="text-xl font-semibold mb-3">播客</h2>
-          <ul class="space-y-2 text-sm">
-            {podcasts.slice(0, 3).map((p) => (
-              <li><a href={`/podcast/${p.slug}`} class="hover:underline">{p.title}</a></li>
+    {topProducts.length > 0 && (
+      <>
+        <section class="reveal">
+          <SectionHeader en="Products" kicker="SHIPPED · WHAT THE SOLO CO. SELLS" action="All products" actionHref="/products" />
+          <div>
+            {topProducts.map((p, i) => (
+              <>
+                {i > 0 && <hr class="hand-divider my-2" />}
+                <ProductFeature product={p} index={i} total={allProducts.length} />
+              </>
             ))}
-          </ul>
+          </div>
+        </section>
+        <hr class="hand-divider my-14 md:my-20" />
+      </>
+    )}
+
+    {topMedia.length > 0 && (
+      <>
+        <section class="reveal">
+          <SectionHeader en="Media" kicker="OUTPUT · 听一耳朵 · 看一眼 · MEDIA" action="All media" actionHref="/media" />
+          <div class="grid md:grid-cols-3 gap-8 md:gap-10">
+            {topMedia.map((it) => (it.kind === 'podcast' ? <PodcastFeatureCard pod={it} /> : <VideoCard video={it} />))}
+          </div>
+        </section>
+        <hr class="hand-divider my-14 md:my-20" />
+      </>
+    )}
+
+    {allPages.length > 0 && (
+      <section class="reveal">
+        <SectionHeader en="Pages" kicker="LIBRARY · 专题 / 合集 / 独立小页" action="All pages" actionHref="/pages" />
+        <div class="grid md:grid-cols-3 gap-5 md:gap-6">
+          {featuredPages.map((p) => (p.kind === 'topic' ? <PageTopicCard page={p} /> : <PageCollectionCard page={p} />))}
         </div>
-      )}
-      {videos.length > 0 && (
-        <div>
-          <h2 class="text-xl font-semibold mb-3">视频</h2>
-          <ul class="space-y-2 text-sm">
-            {videos.slice(0, 3).map((v) => (
-              <li><a href={v.video_url ?? '#'} class="hover:underline">{v.title}</a></li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </section>
-  )}
-</Layout>
+        {staticPages.length > 0 && (
+          <div class="mt-8 pt-6 border-t flex items-baseline justify-between gap-6 flex-wrap" style="border-color: var(--ink-300);">
+            <div class="kicker shrink-0">独立小页 · STATIC</div>
+            <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-[13px]" style="color: var(--ink-700);">
+              {staticPages.map((p) => (
+                <a href={pageHref(p.id)} class="hand-underline inline-flex items-baseline gap-1.5">
+                  <span style="color: var(--accent); font-family: var(--font-mono);">/{p.id}</span>
+                  <span style="color: var(--ink-500); font-size: 11px; font-family: var(--font-serif-en); font-style: italic;">{p.title_en}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+    )}
+  </div>
+</PaperLayout>

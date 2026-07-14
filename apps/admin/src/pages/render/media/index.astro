@@ -1,0 +1,100 @@
+---
+import PaperLayout from '@/layouts/PaperLayout.astro'
+import ListShell from '@/components/ListShell.astro'
+import { PodcastCard } from '@/components/react/podcast'
+import { MediaVideoRow } from '@/components/react/video'
+import { PLATFORM_COLORS } from '@/components/react/icons'
+import { getSiteSettings, listPodcasts, listVideos } from '@/lib/db/queries'
+import { mediaFeed } from '@/lib/adapt'
+
+const env = Astro.locals.runtime.env
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+const [pods, vids] = await Promise.all([
+  listPodcasts(env.DB, { status: 'published' }),
+  listVideos(env.DB, { status: 'published' }),
+])
+const items = mediaFeed(pods, vids)
+const podcastCount = items.filter((i) => i.kind === 'podcast').length
+const videoCount = items.filter((i) => i.kind === 'video').length
+const tabs = [
+  { id: 'all', zh: '全部', en: 'ALL', count: items.length },
+  { id: 'podcasts', zh: '播客', en: 'PODCASTS', count: podcastCount },
+  { id: 'videos', zh: '视频', en: 'VIDEOS', count: videoCount },
+]
+const biliColor = PLATFORM_COLORS['Bilibili']
+---
+
+<PaperLayout settings={settings} env={envProps} pathname="/media" title="Media · 自媒体" description="播客《半熟电波》、视频在 Bilibili 和 YouTube 的合并时间轴。">
+  <ListShell kicker="OUTPUT · 自媒体 · MEDIA" en="Media" blurb="一个人在写、在录、在剪。播客叫《半熟电波》、视频在 Bilibili 和 YouTube。这里是两条线合在一起的时间轴——按日期倒序,听的和看的混在一起。" count={items.length} wide>
+    <div class="mb-10 grid md:grid-cols-2 gap-5 md:gap-6 pb-8 border-b" style="border-color: var(--ink-300);">
+      <div class="paper-card p-5" style="background: var(--paper-50);">
+        <div class="kicker mb-2">PODCAST · 播客</div>
+        <div class="font-display italic leading-tight mb-2" style="color: var(--accent); font-size: clamp(24px, 2.6vw, 30px);">半熟电波 · Half-Cooked Radio</div>
+        <p class="text-[13.5px] mb-3" style="color: var(--ink-700); line-height: 1.7; font-family: var(--font-wenkai);">没有 jingle、没有广告、没有正式的开场白。两周一更,一次聊一件事。</p>
+        <div class="flex flex-wrap gap-x-3 gap-y-1 text-[12px]" style="color: var(--ink-700);">
+          <a href="#" class="hand-underline">小宇宙</a><a href="#" class="hand-underline">Apple Podcasts</a><a href="#" class="hand-underline">Spotify</a><a href="/rss.xml" class="hand-underline">RSS</a>
+        </div>
+      </div>
+      <div class="paper-card p-5" style="background: var(--paper-50);">
+        <div class="kicker mb-2">VIDEO · 视频</div>
+        <div class="font-display italic leading-tight mb-2" style={`color: ${biliColor}; font-size: clamp(24px, 2.6vw, 30px);`}>桌面、键盘、和一只猫</div>
+        <p class="text-[13.5px] mb-3" style="color: var(--ink-700); line-height: 1.7; font-family: var(--font-wenkai);">在 Bilibili 和 YouTube 同步,主题围绕开发、桌面、生活和一些不太正经的随想。</p>
+      </div>
+    </div>
+
+    <div class="mb-2 flex flex-wrap items-end justify-between gap-3">
+      <div id="media-tabs" class="flex flex-wrap items-center gap-1.5">
+        {tabs.map((t) => (
+          <button data-tab={t.id} class="media-tab px-3 py-1.5 text-[13px] inline-flex items-baseline gap-1.5"
+            style={`font-family: var(--font-body); border: 1px solid ${t.id === 'all' ? 'var(--accent)' : 'var(--ink-300)'}; color: ${t.id === 'all' ? 'var(--accent)' : 'var(--ink-700)'}; background: ${t.id === 'all' ? 'rgba(200,85,61,0.06)' : 'transparent'}; border-radius: 2px;`}>
+            <span>{t.zh}</span>
+            <span style="font-family: var(--font-mono); font-size: 10px; opacity: 0.7;">· {t.en}</span>
+            <span class="ml-1" style="font-family: var(--font-mono); font-size: 11px; opacity: 0.7;">{String(t.count).padStart(2, '0')}</span>
+          </button>
+        ))}
+      </div>
+      <span class="text-[11px]" style="color: var(--ink-500); font-family: var(--font-mono);">NEWEST FIRST · 按日期倒序</span>
+    </div>
+
+    <div id="media-timeline">
+      {items.map((it, i) => (
+        <div class="media-row" data-kind={it.kind} style="border-color: var(--ink-300);">
+          {it.kind === 'podcast' ? <PodcastCard pod={it} idx={i} /> : <MediaVideoRow video={it} idx={i} />}
+        </div>
+      ))}
+    </div>
+  </ListShell>
+</PaperLayout>
+
+<script is:inline>
+  ;(function () {
+    var tabs = [].slice.call(document.querySelectorAll('.media-tab'))
+    var rows = [].slice.call(document.querySelectorAll('.media-row'))
+    function refreshBorders() {
+      var visible = rows.filter(function (r) { return r.style.display !== 'none' })
+      rows.forEach(function (r) { r.style.borderBottom = '' })
+      visible.forEach(function (r, i) { r.style.borderBottom = i < visible.length - 1 ? '1px solid var(--ink-300)' : '' })
+    }
+    function pick(target) {
+      tabs.forEach(function (t) {
+        var active = t.getAttribute('data-tab') === target
+        t.style.borderColor = active ? 'var(--accent)' : 'var(--ink-300)'
+        t.style.color = active ? 'var(--accent)' : 'var(--ink-700)'
+        t.style.background = active ? 'rgba(200,85,61,0.06)' : 'transparent'
+      })
+      rows.forEach(function (r) {
+        var k = r.getAttribute('data-kind')
+        var show = target === 'all' || (target === 'podcasts' && k === 'podcast') || (target === 'videos' && k === 'video')
+        r.style.display = show ? '' : 'none'
+      })
+      refreshBorders()
+      var map = { all: '/media', podcasts: '/media?filter=podcasts', videos: '/media?filter=videos' }
+      if (location.pathname + location.search !== map[target]) history.replaceState(null, '', map[target])
+    }
+    tabs.forEach(function (t) { t.addEventListener('click', function () { pick(t.getAttribute('data-tab')) }) })
+    var f = new URLSearchParams(location.search).get('filter')
+    if (f === 'podcasts' || f === 'videos') pick(f)
+    else refreshBorders()
+  })()
+</script>

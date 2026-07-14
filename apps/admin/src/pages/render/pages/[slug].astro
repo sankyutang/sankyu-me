@@ -1,0 +1,76 @@
+---
+import PaperLayout from '@/layouts/PaperLayout.astro'
+import DetailShell from '@/components/DetailShell.astro'
+import PagesDetail from '@/components/react/PagesDetail'
+import { FauxBody, RelatedGrid } from '@/components/react/shells'
+import { PAGE_KIND_META } from '@/components/react/pagebits'
+import { pageHref } from '@/lib/links'
+import { renderMarkdoc } from '@/lib/markdoc'
+import { getSiteSettings, getPage, listPages, listPosts, listProducts, listPodcasts, listVideos } from '@/lib/db/queries'
+import { adaptPage, adaptPost, adaptProduct, adaptPodcast, adaptVideo } from '@/lib/adapt'
+import { buildCrossRelated } from '@/lib/related'
+
+const env = Astro.locals.runtime.env
+const { slug } = Astro.params
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+
+const row = await getPage(env.DB, slug!)
+if (!row) return new Response('Not found', { status: 404 })
+const p = adaptPage(row)
+const kind = p.kind || 'static'
+const contentHtml = renderMarkdoc(row.content_markdoc)
+
+const allPages = (await listPages(env.DB)).map(adaptPage)
+const staticRelated = allPages.filter((x) => x.id !== p.id).slice(0, 3).map((x) => ({
+  id: x.id,
+  kicker: PAGE_KIND_META[x.kind || 'static'].en + ' · ' + (x.category || ''),
+  title: x.title_zh,
+  excerpt: x.desc,
+  meta: x.date,
+  href: pageHref(x.id),
+}))
+const relatedPages = allPages.filter((x) => x.id !== p.id && (x.kind === 'topic' || x.kind === 'collection')).slice(0, 3)
+
+const [posts, products, podcasts, videos] = await Promise.all([
+  listPosts(env.DB, { status: 'published' }),
+  listProducts(env.DB),
+  listPodcasts(env.DB, { status: 'published' }),
+  listVideos(env.DB, { status: 'published' }),
+])
+const crossRelated = buildCrossRelated('pages', {
+  posts: posts.map((x) => adaptPost(x, env.ASSET_BASE_URL)),
+  products: products.map((x) => adaptProduct(x, env.ASSET_BASE_URL)),
+  podcasts: podcasts.map(adaptPodcast),
+  videos: videos.map(adaptVideo),
+})
+---
+
+<PaperLayout settings={settings} env={envProps} pathname={`/pages/${slug}`} title={p.title_zh} description={p.desc}>
+  {kind === 'static' ? (
+    <DetailShell
+      kicker={'PAGE · ' + (p.category || '静态页')}
+      zh={p.title_zh}
+      en={p.title_en}
+      backHref="/pages"
+      backLabel="页面列表"
+      metaFields={[
+        { label: 'PATH', value: '/' + p.id },
+        { label: 'KIND', value: '静态页' },
+        { label: 'UPDATED', value: p.date },
+      ]}
+      toc={null}
+      hasRelated={staticRelated.length > 0}
+    >
+      <p class="text-[18px] md:text-[20px] mb-6" style="color: var(--ink-800); line-height: 1.75; font-family: var(--font-wenkai);">{p.desc}</p>
+      {contentHtml ? (
+        <div class="prose prose-stone max-w-none" set:html={contentHtml} />
+      ) : (
+        <FauxBody paragraphs={4} headings={['', '本月', '上月', '以前']} />
+      )}
+      <RelatedGrid slot="related" items={staticRelated} />
+    </DetailShell>
+  ) : (
+    <PagesDetail page={p} relatedPages={relatedPages} crossRelated={crossRelated} />
+  )}
+</PaperLayout>

@@ -61,42 +61,21 @@ export default config({
       entryLayout: 'content',
       schema: {
         title: fields.slug({ name: { label: '标题' } }),
-        seoTitle: fields.text({ label: 'SEO 标题' }),
-        seoDescription: fields.text({ label: 'SEO 描述', multiline: true }),
-        ogImage: fields.image({
-          label: 'OG 图片',
-          directory: 'public/images/og',
-          publicPath: '/images/og/',
-        }),
-        content: fields.markdoc({ label: '内容', components: markdocComponents }),
-      },
-    }),
-
-    works: collection({
-      label: 'Works',
-      slugField: 'title',
-      path: 'src/content/works/*',
-      format: { contentField: 'content' },
-      entryLayout: 'content',
-      schema: {
-        title: fields.slug({ name: { label: '标题' } }),
-        summary: fields.text({ label: '简介', multiline: true }),
-        coverImage: fields.image({
-          label: '封面图',
-          directory: 'public/images/works',
-          publicPath: '/images/works/',
-        }),
-        status: fields.select({
-          label: '状态',
+        titleEn: fields.text({ label: '英文标题' }),
+        kind: fields.select({
+          label: '类型',
           options: [
-            { label: 'Draft', value: 'draft' },
-            { label: 'Published', value: 'published' },
+            { label: '专题 Topic', value: 'topic' },
+            { label: '合集 Collection', value: 'collection' },
+            { label: '静态小页 Static', value: 'static' },
           ],
-          defaultValue: 'draft',
+          defaultValue: 'static',
         }),
-        publishedAt: fields.datetime({ label: '发布时间' }),
-        featured: fields.checkbox({ label: '置顶', defaultValue: false }),
-        externalUrl: fields.url({ label: '外部链接' }),
+        category: fields.text({ label: '分类（如 技术 · TECH）' }),
+        glyph: fields.text({ label: '字符标记（如 { }）' }),
+        excerpt: fields.text({ label: '摘要', multiline: true }),
+        coverColor: fields.text({ label: '封面色（hex）', defaultValue: '#c8553d' }),
+        publishedAt: fields.datetime({ label: '更新时间' }),
         seoTitle: fields.text({ label: 'SEO 标题' }),
         seoDescription: fields.text({ label: 'SEO 描述', multiline: true }),
         ogImage: fields.image({
@@ -199,6 +178,16 @@ export default config({
         }),
         audioUrl: fields.url({ label: '音频链接' }),
         duration: fields.text({ label: '时长（如 42:15）' }),
+        ep: fields.text({ label: 'EP 编号（如 EP·12）' }),
+        guest: fields.text({ label: '嘉宾', defaultValue: '独白' }),
+        coverColor: fields.text({ label: '封面色（hex）', defaultValue: '#c8553d' }),
+        chapters: fields.array(
+          fields.object({
+            time: fields.text({ label: '时间戳' }),
+            title: fields.text({ label: '章节标题' }),
+          }),
+          { label: '章节', itemLabel: (p) => `${p.fields.time.value} · ${p.fields.title.value}` }
+        ),
         publishedAt: fields.datetime({ label: '发布时间' }),
         status: fields.select({
           label: '状态',
@@ -252,6 +241,11 @@ export default config({
           publicPath: '/images/videos/',
         }),
         description: fields.text({ label: '描述', multiline: true }),
+        duration: fields.text({ label: '时长（如 12:35）' }),
+        views: fields.text({ label: '播放数（如 4.2k）' }),
+        likes: fields.text({ label: '点赞数' }),
+        tags: fields.array(fields.text({ label: 'Tag' }), { label: '标签', itemLabel: (p) => p.value }),
+        coverColor: fields.text({ label: '主色（hex）', defaultValue: '#c8553d' }),
         publishedAt: fields.datetime({ label: '发布时间' }),
         status: fields.select({
           label: '状态',

@@ -1,8 +1,0 @@
----
-import BlogList from '@/templates/BlogList.astro'
-import { getSiteSettings, listPosts } from '@/lib/db/queries'
-const env = Astro.locals.runtime.env
-const [settings, posts] = await Promise.all([getSiteSettings(env.DB), listPosts(env.DB, { status: 'published' })])
-const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
----
-<BlogList settings={settings} env={envProps} posts={posts} />

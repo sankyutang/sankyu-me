@@ -1,8 +1,0 @@
----
-import PodcastsList from '@/templates/PodcastsList.astro'
-import { getSiteSettings, listPodcasts } from '@/lib/db/queries'
-const env = Astro.locals.runtime.env
-const [settings, podcasts] = await Promise.all([getSiteSettings(env.DB), listPodcasts(env.DB, { status: 'published' })])
-const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
----
-<PodcastsList settings={settings} env={envProps} podcasts={podcasts} />

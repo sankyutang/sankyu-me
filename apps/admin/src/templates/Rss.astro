@@ -19,8 +19,8 @@ const escapeXml = (s: string) =>
     {posts.map((p) => (
       <item>
         <title>{escapeXml(p.title)}</title>
-        <link>{base}/blog/{p.slug}</link>
-        <guid isPermaLink="true">{base}/blog/{p.slug}</guid>
+        <link>{base}/posts/{p.slug}</link>
+        <guid isPermaLink="true">{base}/posts/{p.slug}</guid>
         {p.published_at && <pubDate>{new Date(p.published_at).toUTCString()}</pubDate>}
         {p.excerpt && <description>{escapeXml(p.excerpt)}</description>}
       </item>

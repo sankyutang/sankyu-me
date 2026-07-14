@@ -1,0 +1,58 @@
+---
+import PaperLayout from '@/layouts/PaperLayout.astro'
+import ListShell from '@/components/ListShell.astro'
+import { PostCardLarge, PostRow } from '@/components/react/cards'
+import { getSiteSettings, listPosts } from '@/lib/db/queries'
+import { adaptPost } from '@/lib/adapt'
+
+const env = Astro.locals.runtime.env
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+const posts = (await listPosts(env.DB, { status: 'published' })).map((p) => adaptPost(p, env.ASSET_BASE_URL))
+const tags = ['全部', '一人公司', 'AI', '设计', '商业', '月报']
+const cards = posts.slice(0, 3)
+const rows = posts.slice(3)
+---
+
+<PaperLayout settings={settings} env={envProps} pathname="/posts" title="Posts" description="写给一年后还会读到这页的自己。">
+  <ListShell kicker="WRITTEN · 一字一句" en="Posts" blurb="写给一年后还会读到这页的自己。中文为主，偶尔英文，不押韵。" count={posts.length}>
+    <div id="post-filters" class="flex flex-wrap items-center gap-2 mb-8">
+      {tags.map((t) => (
+        <button data-filter={t} class="post-chip px-3 py-1 text-[13px]"
+          style={`font-family: var(--font-body); border: 1px solid ${t === '全部' ? 'var(--accent)' : 'var(--ink-300)'}; color: ${t === '全部' ? 'var(--accent)' : 'var(--ink-700)'}; background: ${t === '全部' ? 'rgba(200,85,61,0.06)' : 'transparent'}; border-radius: 2px;`}>
+          {t}
+        </button>
+      ))}
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5 md:gap-6 mb-12">
+      {cards.map((p) => <div class="post-item h-full" data-tag={p.tag}><PostCardLarge post={p} /></div>)}
+    </div>
+
+    {rows.length > 0 && (
+      <>
+        <div class="kicker mb-3">归档 · ALL ESSAYS</div>
+        <div>{rows.map((p) => <div class="post-item" data-tag={p.tag}><PostRow post={p} /></div>)}</div>
+      </>
+    )}
+  </ListShell>
+</PaperLayout>
+
+<script is:inline>
+  ;(function () {
+    var chips = [].slice.call(document.querySelectorAll('.post-chip'))
+    var items = [].slice.call(document.querySelectorAll('.post-item'))
+    function setActive(target) {
+      chips.forEach(function (c) {
+        var active = c.getAttribute('data-filter') === target
+        c.style.borderColor = active ? 'var(--accent)' : 'var(--ink-300)'
+        c.style.color = active ? 'var(--accent)' : 'var(--ink-700)'
+        c.style.background = active ? 'rgba(200,85,61,0.06)' : 'transparent'
+      })
+      items.forEach(function (it) {
+        it.style.display = target === '全部' || it.getAttribute('data-tag') === target ? '' : 'none'
+      })
+    }
+    chips.forEach(function (c) { c.addEventListener('click', function () { setActive(c.getAttribute('data-filter') || '全部') }) })
+  })()
+</script>

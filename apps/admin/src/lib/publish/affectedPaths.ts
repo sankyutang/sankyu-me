@@ -10,7 +10,7 @@ export interface PathPlan {
 }
 
 // Map a (collection, slug, op) to the static object keys that need refresh.
-// Detail page lives at `<base>/<slug>/index.html`; list at `<base>/index.html`.
+// Detail page lives at `<base>/<slug>/index.html`; list at `<listKey>`.
 export function planPaths(
   collection: Collection,
   slug: string,
@@ -34,54 +34,70 @@ export function planPaths(
     remove.add(detailKey)
   }
 
-  // Featured items appear on home — already covered above. Sitemap always refreshed.
+  // Pages feed the /pages list; a page slug 'about' also nudges the bespoke About.
+  if (collection === 'pages' && slug === 'about') render.add('about/index.html')
+
   render.add('sitemap.xml')
   render.add('rss.xml')
 
-  // Featured nudges home; nothing extra here since we always rebuild home.
   void ctx
-
   return { render: [...render], remove: [...remove] }
 }
 
+// Detail base path per collection (Media merges podcasts + videos).
 export function detailBaseFor(collection: Collection): string {
   switch (collection) {
     case 'posts':
-      return 'blog'
-    case 'works':
-      return 'works'
+      return 'posts'
     case 'products':
       return 'products'
     case 'podcasts':
-      return 'podcast'
+      return 'media/podcasts'
     case 'videos':
-      return 'videos'
+      return 'media/videos'
     case 'pages':
-      return '' // top-level pages: /about/index.html
+      return 'pages'
   }
 }
 
+// List page key per collection (podcasts + videos share the merged Media list).
 export function listKeyFor(collection: Collection): string {
-  const base = detailBaseFor(collection)
-  return base ? `${base}/index.html` : 'index.html'
+  switch (collection) {
+    case 'posts':
+      return 'posts/index.html'
+    case 'products':
+      return 'products/index.html'
+    case 'podcasts':
+    case 'videos':
+      return 'media/index.html'
+    case 'pages':
+      return 'pages/index.html'
+  }
 }
 
 // Used by site_settings: rebuild everything.
 export function planFullSite(slugs: {
   posts: string[]
-  works: string[]
   products: string[]
   podcasts: string[]
   videos: string[]
   pages: string[]
 }): PathPlan {
-  const render: string[] = ['index.html', 'sitemap.xml', 'rss.xml', '404.html']
-  render.push('blog/index.html', 'works/index.html', 'products/index.html', 'podcast/index.html', 'videos/index.html')
-  for (const s of slugs.posts) render.push(`blog/${s}/index.html`)
-  for (const s of slugs.works) render.push(`works/${s}/index.html`)
+  const render: string[] = [
+    'index.html',
+    'about/index.html',
+    'sitemap.xml',
+    'rss.xml',
+    '404.html',
+    'posts/index.html',
+    'products/index.html',
+    'media/index.html',
+    'pages/index.html',
+  ]
+  for (const s of slugs.posts) render.push(`posts/${s}/index.html`)
   for (const s of slugs.products) render.push(`products/${s}/index.html`)
-  for (const s of slugs.podcasts) render.push(`podcast/${s}/index.html`)
-  // videos collection currently only has a list view
-  for (const s of slugs.pages) render.push(`${s}/index.html`)
+  for (const s of slugs.podcasts) render.push(`media/podcasts/${s}/index.html`)
+  for (const s of slugs.videos) render.push(`media/videos/${s}/index.html`)
+  for (const s of slugs.pages) render.push(`pages/${s}/index.html`)
   return { render, remove: [] }
 }

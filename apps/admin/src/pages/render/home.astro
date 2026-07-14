@@ -2,22 +2,22 @@
 import Home from '@/templates/Home.astro'
 import {
   getSiteSettings,
+  listPages,
   listPodcasts,
   listPosts,
   listProducts,
   listVideos,
-  listWorks,
 } from '@/lib/db/queries'
 
 const env = Astro.locals.runtime.env
-const [settings, posts, works, products, podcasts, videos] = await Promise.all([
+const [settings, posts, products, podcasts, videos, pages] = await Promise.all([
   getSiteSettings(env.DB),
   listPosts(env.DB, { status: 'published' }),
-  listWorks(env.DB, { status: 'published' }),
   listProducts(env.DB),
   listPodcasts(env.DB, { status: 'published' }),
   listVideos(env.DB, { status: 'published' }),
+  listPages(env.DB),
 ])
 const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
 ---
-<Home settings={settings} env={envProps} posts={posts} works={works} products={products} podcasts={podcasts} videos={videos} />
+<Home settings={settings} env={envProps} posts={posts} products={products} podcasts={podcasts} videos={videos} pages={pages} />

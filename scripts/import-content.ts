@@ -121,14 +121,9 @@ function postRow(slug: string, d: Frontmatter, body: string): string {
   );`
 }
 function pageRow(slug: string, d: Frontmatter, body: string): string {
-  return `INSERT INTO pages (slug, title, seo_title, seo_description, og_image, content_markdoc) VALUES (
-    ${sq(slug)}, ${sq(d.title)}, ${sq(d.seoTitle)}, ${sq(d.seoDescription)}, ${sq(d.ogImage)}, ${sq(body)}
-  );`
-}
-function workRow(slug: string, d: Frontmatter, body: string): string {
-  return `INSERT INTO works (slug, title, summary, cover_image, status, published_at, featured, external_url, seo_title, seo_description, og_image, content_markdoc) VALUES (
-    ${sq(slug)}, ${sq(d.title)}, ${sq(d.summary)}, ${sq(d.coverImage)}, ${sq(d.status ?? 'draft')}, ${tsLit(d.publishedAt)},
-    ${intLit(d.featured)}, ${sq(d.externalUrl)}, ${sq(d.seoTitle)}, ${sq(d.seoDescription)}, ${sq(d.ogImage)}, ${sq(body)}
+  const a = d as any
+  return `INSERT INTO pages (slug, title, title_en, kind, category, glyph, excerpt, cover_color, published_at, seo_title, seo_description, og_image, content_markdoc) VALUES (
+    ${sq(slug)}, ${sq(d.title)}, ${sq(a.titleEn)}, ${sq(a.kind ?? 'static')}, ${sq(a.category)}, ${sq(a.glyph)}, ${sq(a.excerpt)}, ${sq(a.coverColor ?? '#c8553d')}, ${tsLit(a.publishedAt)}, ${sq(d.seoTitle)}, ${sq(d.seoDescription)}, ${sq(d.ogImage)}, ${sq(body)}
   );`
 }
 function productRow(slug: string, d: Frontmatter, body: string): string {
@@ -140,15 +135,17 @@ function productRow(slug: string, d: Frontmatter, body: string): string {
   );`
 }
 function podcastRow(slug: string, d: Frontmatter, body: string): string {
-  return `INSERT INTO podcasts (slug, title, excerpt, cover_image, audio_url, duration, published_at, status, external_links, related_posts, seo_title, seo_description, og_image, content_markdoc) VALUES (
-    ${sq(slug)}, ${sq(d.title)}, ${sq(d.excerpt)}, ${sq(d.coverImage)}, ${sq(d.audioUrl)}, ${sq(d.duration)}, ${tsLit(d.publishedAt)},
+  const a = d as any
+  return `INSERT INTO podcasts (slug, title, excerpt, cover_image, audio_url, duration, ep, guest, cover_color, chapters, published_at, status, external_links, related_posts, seo_title, seo_description, og_image, content_markdoc) VALUES (
+    ${sq(slug)}, ${sq(d.title)}, ${sq(d.excerpt)}, ${sq(d.coverImage)}, ${sq(d.audioUrl)}, ${sq(d.duration)}, ${sq(a.ep)}, ${sq(a.guest)}, ${sq(a.coverColor ?? '#c8553d')}, ${jsonLit(a.chapters ?? [])}, ${tsLit(d.publishedAt)},
     ${sq(d.status ?? 'draft')}, ${jsonLit(d.externalLinks ?? [])}, ${jsonLit(d.relatedPosts ?? [])},
     ${sq(d.seoTitle)}, ${sq(d.seoDescription)}, ${sq(d.ogImage)}, ${sq(body)}
   );`
 }
 function videoRow(slug: string, d: Frontmatter): string {
-  return `INSERT INTO videos (slug, title, platform, video_url, thumbnail, description, published_at, status) VALUES (
-    ${sq(slug)}, ${sq(d.title)}, ${sq(d.platform ?? 'youtube')}, ${sq(d.videoUrl)}, ${sq(d.thumbnail)}, ${sq(d.description)}, ${tsLit(d.publishedAt)}, ${sq(d.status ?? 'draft')}
+  const a = d as any
+  return `INSERT INTO videos (slug, title, platform, video_url, thumbnail, description, duration, views, likes, tags, cover_color, published_at, status) VALUES (
+    ${sq(slug)}, ${sq(d.title)}, ${sq(d.platform ?? 'youtube')}, ${sq(d.videoUrl)}, ${sq(d.thumbnail)}, ${sq(d.description)}, ${sq(a.duration)}, ${sq(a.views)}, ${sq(a.likes)}, ${jsonLit(a.tags ?? [])}, ${sq(a.coverColor ?? '#c8553d')}, ${tsLit(d.publishedAt)}, ${sq(d.status ?? 'draft')}
   );`
 }
 
@@ -161,7 +158,6 @@ function main() {
   // D1 wraps each migration in its own transaction; do not emit BEGIN/COMMIT.
   for (const item of walkCollection(path.join(ROOT, 'posts'))) out(postRow(item.slug, item.data, item.body))
   for (const item of walkCollection(path.join(ROOT, 'pages'))) out(pageRow(item.slug, item.data, item.body))
-  for (const item of walkCollection(path.join(ROOT, 'works'))) out(workRow(item.slug, item.data, item.body))
   for (const item of walkCollection(path.join(ROOT, 'products'))) out(productRow(item.slug, item.data, item.body))
   for (const item of walkCollection(path.join(ROOT, 'podcasts'))) out(podcastRow(item.slug, item.data, item.body))
   for (const item of walkCollection(path.join(ROOT, 'videos'))) out(videoRow(item.slug, item.data))

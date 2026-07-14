@@ -1,0 +1,60 @@
+---
+import PaperLayout from '@/layouts/PaperLayout.astro'
+import DetailShell from '@/components/DetailShell.astro'
+import { FauxBody, RelatedGrid } from '@/components/react/shells'
+import { renderMarkdoc } from '@/lib/markdoc'
+import { getSiteSettings, getPost, listPosts, listProducts, listPodcasts, listVideos } from '@/lib/db/queries'
+import { adaptPost, adaptProduct, adaptPodcast, adaptVideo } from '@/lib/adapt'
+import { buildCrossRelated } from '@/lib/related'
+
+const env = Astro.locals.runtime.env
+const { slug } = Astro.params
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+
+const row = await getPost(env.DB, slug!)
+if (!row) return new Response('Not found', { status: 404 })
+const post = adaptPost(row, env.ASSET_BASE_URL)
+const contentHtml = renderMarkdoc(row.content_markdoc)
+
+const [posts, products, podcasts, videos] = await Promise.all([
+  listPosts(env.DB, { status: 'published' }),
+  listProducts(env.DB),
+  listPodcasts(env.DB, { status: 'published' }),
+  listVideos(env.DB, { status: 'published' }),
+])
+const related = buildCrossRelated('posts', {
+  posts: posts.map((p) => adaptPost(p, env.ASSET_BASE_URL)),
+  products: products.map((p) => adaptProduct(p, env.ASSET_BASE_URL)),
+  podcasts: podcasts.map(adaptPodcast),
+  videos: videos.map(adaptVideo),
+})
+---
+
+<PaperLayout settings={settings} env={envProps} pathname={`/posts/${slug}`} title={post.title_zh} description={post.excerpt}>
+  <DetailShell
+    kicker={post.kicker + ' · ' + post.date}
+    zh={post.title_zh}
+    en={post.title_en}
+    backHref="/posts"
+    backLabel="文章列表"
+    metaFields={[
+      { label: 'DATE', value: post.date },
+      { label: 'READING', value: post.reading || '—' },
+      { label: 'TAG', value: post.tag },
+    ]}
+    toc={[
+      { id: 'h-1', label: '开场' },
+      { id: 'h-2', label: '中段' },
+      { id: 'h-3', label: '尾声' },
+    ]}
+    hasRelated={related.length > 0}
+  >
+    {contentHtml ? (
+      <div class="prose prose-stone max-w-none" set:html={contentHtml} />
+    ) : (
+      <FauxBody paragraphs={6} headings={['', '开场', '中段', '尾声', '', '结语']} />
+    )}
+    <RelatedGrid slot="related" items={related} />
+  </DetailShell>
+</PaperLayout>

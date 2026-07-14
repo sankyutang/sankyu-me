@@ -10,6 +10,16 @@ export default defineConfig({
   site: 'https://sankyu.me',
   adapter: cloudflare(),
   integrations: [react(), keystatic(), mdx(), sitemap()],
+  redirects: {
+    '/blog': '/posts',
+    '/blog/[slug]': '/posts/[slug]',
+    '/works': '/products',
+    '/podcast': '/media',
+    '/videos': '/media',
+    '/now': '/pages/now',
+    '/uses': '/pages/uses',
+    '/links': '/pages',
+  },
   vite: {
     plugins: [tailwindcss()],
   },

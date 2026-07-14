@@ -1,0 +1,38 @@
+---
+interface Props {
+  kicker: string
+  en: string
+  blurb?: string
+  count?: number | null
+  countLabel?: string
+  wide?: boolean
+}
+
+const { kicker, en, blurb, count = null, countLabel = 'TOTAL', wide = false } = Astro.props
+---
+
+<div class={(wide ? 'max-w-6xl' : 'max-w-5xl') + ' mx-auto px-5 md:px-8 pt-12 md:pt-16 pb-16'}>
+  <header class="reveal mb-10 md:mb-14 grid md:grid-cols-[1fr_auto] gap-6 md:items-end">
+    <div>
+      <div class="kicker mb-3">{kicker}</div>
+      <h1 class="font-display text-[52px] md:text-[80px] leading-[0.95] tracking-tight" style="color: var(--ink-900);">
+        {en}
+      </h1>
+      {blurb && (
+        <p class="mt-4 text-[15px] md:text-[16px] max-w-[58ch]" style="color: var(--ink-700); line-height: 1.75;">
+          {blurb}
+        </p>
+      )}
+    </div>
+    {count != null && (
+      <div class="text-right inline-flex md:flex-col items-baseline md:items-end gap-2 md:gap-1">
+        <span class="font-display text-[40px] md:text-[48px] leading-none" style="color: var(--accent);">
+          {count}
+        </span>
+        <span class="kicker">{countLabel}</span>
+      </div>
+    )}
+  </header>
+  <hr class="hand-divider mb-10" />
+  <slot />
+</div>

@@ -1,8 +1,0 @@
----
-import VideosList from '@/templates/VideosList.astro'
-import { getSiteSettings, listVideos } from '@/lib/db/queries'
-const env = Astro.locals.runtime.env
-const [settings, videos] = await Promise.all([getSiteSettings(env.DB), listVideos(env.DB, { status: 'published' })])
-const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
----
-<VideosList settings={settings} env={envProps} videos={videos} />

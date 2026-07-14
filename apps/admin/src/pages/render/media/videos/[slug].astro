@@ -1,0 +1,20 @@
+---
+import PaperLayout from '@/layouts/PaperLayout.astro'
+import VideosDetail from '@/components/react/VideosDetail'
+import { getSiteSettings, listVideos } from '@/lib/db/queries'
+import { adaptVideo } from '@/lib/adapt'
+
+const env = Astro.locals.runtime.env
+const { slug } = Astro.params
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+
+const all = (await listVideos(env.DB, { status: 'published' })).map(adaptVideo)
+const video = all.find((v) => v.id === slug)
+if (!video) return new Response('Not found', { status: 404 })
+const related = all.filter((x) => x.id !== video.id).slice(0, 5)
+---
+
+<PaperLayout settings={settings} env={envProps} pathname={`/media/videos/${slug}`} title={video.title} description={video.desc}>
+  <VideosDetail video={video} related={related} />
+</PaperLayout>

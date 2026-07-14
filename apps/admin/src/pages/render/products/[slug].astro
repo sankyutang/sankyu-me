@@ -1,11 +1,21 @@
 ---
-import ProductDetail from '@/templates/ProductDetail.astro'
-import { getProduct, getSiteSettings } from '@/lib/db/queries'
+import PaperLayout from '@/layouts/PaperLayout.astro'
+import ProductsDetail from '@/components/react/ProductsDetail'
+import { getSiteSettings, getProduct, listProducts } from '@/lib/db/queries'
+import { adaptProduct } from '@/lib/adapt'
+
 const env = Astro.locals.runtime.env
-const slug = Astro.params.slug as string
-const product = await getProduct(env.DB, slug)
-if (!product) return new Response('not found', { status: 404 })
+const { slug } = Astro.params
 const settings = await getSiteSettings(env.DB)
 const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+
+const row = await getProduct(env.DB, slug!)
+if (!row) return new Response('Not found', { status: 404 })
+const product = adaptProduct(row, env.ASSET_BASE_URL)
+const all = (await listProducts(env.DB)).map((p) => adaptProduct(p, env.ASSET_BASE_URL))
+const others = all.filter((x) => x.id !== product.id).slice(0, 3)
 ---
-<ProductDetail settings={settings} env={envProps} product={product} />
+
+<PaperLayout settings={settings} env={envProps} pathname={`/products/${slug}`} title={product.name_en} description={product.desc}>
+  <ProductsDetail product={product} others={others} />
+</PaperLayout>

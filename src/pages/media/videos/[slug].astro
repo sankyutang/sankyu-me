@@ -1,0 +1,20 @@
+---
+export const prerender = true
+import Base from '@/layouts/Base.astro'
+import VideosDetail from '@/components/react/VideosDetail'
+import { getVideos, getVideo } from '@/lib/data-source'
+
+export async function getStaticPaths() {
+  const videos = await getVideos()
+  return videos.map((v) => ({ params: { slug: v.id } }))
+}
+
+const { slug } = Astro.params
+const all = await getVideos()
+const video = (await getVideo(slug!)) ?? all[0]
+const related = all.filter((x) => x.id !== video.id).slice(0, 5)
+---
+
+<Base title={video.title} description={video.desc}>
+  <VideosDetail video={video} related={related} />
+</Base>

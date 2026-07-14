@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mock-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "legacy:dev:mock"],
+      "port": 4321
+    }
+  ]
+}

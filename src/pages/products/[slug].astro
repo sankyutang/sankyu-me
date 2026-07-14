@@ -1,0 +1,20 @@
+---
+export const prerender = true
+import Base from '@/layouts/Base.astro'
+import ProductsDetail from '@/components/react/ProductsDetail'
+import { getProducts, getProduct } from '@/lib/data-source'
+
+export async function getStaticPaths() {
+  const products = await getProducts()
+  return products.map((p) => ({ params: { slug: p.id } }))
+}
+
+const { slug } = Astro.params
+const all = await getProducts()
+const product = (await getProduct(slug!)) ?? all[0]
+const others = all.filter((x) => x.id !== product.id).slice(0, 3)
+---
+
+<Base title={product.name_en} description={product.desc}>
+  <ProductsDetail product={product} others={others} />
+</Base>

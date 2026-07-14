@@ -1,0 +1,74 @@
+---
+import PaperLayout from '@/layouts/PaperLayout.astro'
+import DetailShell from '@/components/DetailShell.astro'
+import { FauxBody, RelatedGrid } from '@/components/react/shells'
+import { Icon } from '@/components/react/icons'
+import { renderMarkdoc } from '@/lib/markdoc'
+import { getSiteSettings, getPodcast, listPodcasts, listPosts, listProducts, listVideos } from '@/lib/db/queries'
+import { adaptPodcast, adaptPost, adaptProduct, adaptVideo } from '@/lib/adapt'
+import { buildCrossRelated } from '@/lib/related'
+
+const env = Astro.locals.runtime.env
+const { slug } = Astro.params
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+
+const row = await getPodcast(env.DB, slug!)
+if (!row) return new Response('Not found', { status: 404 })
+const p = adaptPodcast(row)
+const contentHtml = renderMarkdoc(row.content_markdoc)
+
+const [posts, products, podcasts, videos] = await Promise.all([
+  listPosts(env.DB, { status: 'published' }),
+  listProducts(env.DB),
+  listPodcasts(env.DB, { status: 'published' }),
+  listVideos(env.DB, { status: 'published' }),
+])
+const related = buildCrossRelated('podcasts', {
+  posts: posts.map((x) => adaptPost(x, env.ASSET_BASE_URL)),
+  products: products.map((x) => adaptProduct(x, env.ASSET_BASE_URL)),
+  podcasts: podcasts.map(adaptPodcast),
+  videos: videos.map(adaptVideo),
+})
+---
+
+<PaperLayout settings={settings} env={envProps} pathname={`/media/podcasts/${slug}`} title={p.title} description={p.desc}>
+  <DetailShell
+    kicker={'EPISODE ' + p.ep + ' · ' + p.date}
+    zh={p.title}
+    en={'Half-Cooked Radio · ' + p.guest}
+    backHref="/media"
+    backLabel="Media · 自媒体"
+    metaFields={[
+      { label: 'DATE', value: p.date },
+      { label: 'DURATION', value: p.duration },
+      { label: 'GUEST', value: p.guest },
+      { label: 'EP', value: p.ep },
+    ]}
+    toc={[
+      { id: 'h-1', label: '00:00 开场' },
+      { id: 'h-2', label: '12:30 中段' },
+      { id: 'h-3', label: '35:00 尾声' },
+    ]}
+    hasRelated={related.length > 0}
+  >
+    <div class="paper-card p-5 mb-8 flex items-center gap-4">
+      <span class="w-14 h-14 rounded-full flex items-center justify-center" style="background: var(--accent); color: var(--paper-50);"><Icon.play /></span>
+      <div class="flex-1">
+        <div class="flex items-baseline justify-between mb-1.5">
+          <span class="text-[11px]" style="color: var(--ink-500); font-family: var(--font-mono);">00:00</span>
+          <span class="text-[11px]" style="color: var(--ink-500); font-family: var(--font-mono);">{p.duration}</span>
+        </div>
+        <div class="h-1 rounded-full" style="background: var(--paper-300);"><div class="h-1 rounded-full" style="background: var(--accent); width: 32%;"></div></div>
+      </div>
+      <Icon.wave style={{ color: 'var(--ink-500)' }} />
+    </div>
+    <p class="text-[18px] md:text-[20px] mb-6 font-wenkai" style="color: var(--ink-800); line-height: 1.75;">{p.desc}</p>
+    {contentHtml ? (
+      <div class="prose prose-stone max-w-none" set:html={contentHtml} />
+    ) : (
+      <FauxBody paragraphs={4} headings={['', '00:00 开场', '12:30 中段', '35:00 尾声']} />
+    )}
+    <RelatedGrid slot="related" items={related} />
+  </DetailShell>
+</PaperLayout>

@@ -1,0 +1,73 @@
+---
+export const prerender = true
+import Base from '@/layouts/Base.astro'
+import ListShell from '@/components/ListShell.astro'
+import { PostCardLarge, PostRow } from '@/components/react/cards'
+import { getPosts } from '@/lib/data-source'
+
+const posts = await getPosts()
+const tags = ['全部', '一人公司', 'AI', '设计', '商业', '月报']
+const cards = posts.slice(0, 3)
+const rows = posts.slice(3)
+---
+
+<Base title="Posts" description="写给一年后还会读到这页的自己。">
+  <ListShell
+    kicker="WRITTEN · 一字一句"
+    en="Posts"
+    blurb="写给一年后还会读到这页的自己。中文为主，偶尔英文，不押韵。"
+    count={posts.length}
+  >
+    <div id="post-filters" class="flex flex-wrap items-center gap-2 mb-8">
+      {
+        tags.map((t) => (
+          <button
+            data-filter={t}
+            class="post-chip px-3 py-1 text-[13px]"
+            style={`font-family: var(--font-body); border: 1px solid ${t === '全部' ? 'var(--accent)' : 'var(--ink-300)'}; color: ${t === '全部' ? 'var(--accent)' : 'var(--ink-700)'}; background: ${t === '全部' ? 'rgba(200,85,61,0.06)' : 'transparent'}; border-radius: 2px;`}
+          >
+            {t}
+          </button>
+        ))
+      }
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5 md:gap-6 mb-12">
+      {cards.map((p) => (
+        <div class="post-item h-full" data-tag={p.tag}>
+          <PostCardLarge post={p} />
+        </div>
+      ))}
+    </div>
+
+    {rows.length > 0 && (
+      <>
+        <div class="kicker mb-3">归档 · ALL ESSAYS</div>
+        <div>
+          {rows.map((p) => (
+            <div class="post-item" data-tag={p.tag}>
+              <PostRow post={p} />
+            </div>
+          ))}
+        </div>
+      </>
+    )}
+  </ListShell>
+</Base>
+
+<script>
+  const chips = Array.from(document.querySelectorAll<HTMLButtonElement>('.post-chip'))
+  const items = Array.from(document.querySelectorAll<HTMLElement>('.post-item'))
+  function setActive(target: string) {
+    chips.forEach((c) => {
+      const active = c.dataset.filter === target
+      c.style.borderColor = active ? 'var(--accent)' : 'var(--ink-300)'
+      c.style.color = active ? 'var(--accent)' : 'var(--ink-700)'
+      c.style.background = active ? 'rgba(200,85,61,0.06)' : 'transparent'
+    })
+    items.forEach((it) => {
+      it.style.display = target === '全部' || it.dataset.tag === target ? '' : 'none'
+    })
+  }
+  chips.forEach((c) => c.addEventListener('click', () => setActive(c.dataset.filter || '全部')))
+</script>

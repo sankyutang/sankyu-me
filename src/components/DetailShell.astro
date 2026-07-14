@@ -1,0 +1,107 @@
+---
+interface MetaField {
+  label: string
+  value: string | number
+}
+interface TocItem {
+  id: string
+  label: string
+}
+interface Props {
+  kicker: string
+  zh: string
+  en?: string
+  backHref?: string
+  backLabel?: string
+  metaFields: MetaField[]
+  toc?: TocItem[] | null
+  hasRelated?: boolean
+}
+
+const {
+  kicker,
+  zh,
+  en,
+  backHref = '/',
+  backLabel = '首页',
+  metaFields,
+  toc = null,
+  hasRelated = false,
+} = Astro.props
+---
+
+<div class="max-w-6xl mx-auto px-5 md:px-8 pt-10 md:pt-14 pb-16">
+  <a
+    href={backHref}
+    class="text-[13px] mb-8 hand-underline inline-flex items-center gap-1.5"
+    style="color: var(--ink-700);"
+  >
+    ← 返回 {backLabel}
+  </a>
+
+  <header class="reveal mb-10 max-w-3xl">
+    <div class="kicker mb-3">{kicker}</div>
+    <h1 class="font-display text-[36px] md:text-[52px] leading-[1.05] tracking-tight" style="color: var(--ink-900);">
+      {zh}
+    </h1>
+    {en && (
+      <p class="mt-2 italic text-[18px] md:text-[22px]" style="color: var(--ink-500); font-family: var(--font-serif-en);">
+        {en}
+      </p>
+    )}
+  </header>
+
+  <hr class="hand-divider mb-10 max-w-3xl" />
+
+  <div class="grid md:grid-cols-[minmax(0,1fr)_240px] gap-10 md:gap-14">
+    <article class="reveal max-w-[65ch]" style="color: var(--ink-800);">
+      <slot />
+    </article>
+
+    <aside class="reveal md:sticky md:top-24 md:self-start">
+      <div class="kicker mb-3">META · 元信息</div>
+      <dl class="text-[13px] space-y-1.5 mb-7" style="color: var(--ink-700);">
+        {metaFields.map((f) => (
+          <div class="flex justify-between gap-3 py-1 border-b" style="border-color: var(--ink-300);">
+            <dt style="color: var(--ink-500); font-family: var(--font-mono); font-size: 11px;">{f.label}</dt>
+            <dd class="text-right">{f.value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      {toc && toc.length > 0 && (
+        <>
+          <div class="kicker mb-3">目录 · CONTENTS</div>
+          <ul class="text-[13px] space-y-1.5 mb-7">
+            {toc.map((t, i) => (
+              <li>
+                <a href={'#' + t.id} class="hand-underline" style="color: var(--ink-700);">
+                  {String(i + 1).padStart(2, '0')} · {t.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      <div class="kicker mb-3">分享 · SHARE</div>
+      <div class="flex flex-wrap gap-x-3 gap-y-1 text-[12px]" style="color: var(--ink-700);">
+        <a href="#" class="hand-underline">复制链接</a>
+        <a href="#" class="hand-underline">X / Twitter</a>
+        <a href="#" class="hand-underline">微信</a>
+        <a href="#" class="hand-underline">小红书</a>
+      </div>
+    </aside>
+  </div>
+
+  {hasRelated && (
+    <section class="reveal mt-20">
+      <hr class="hand-divider mb-10" />
+      <div class="kicker mb-2">相关推荐 · RELATED</div>
+      <h3 class="font-display text-[28px] md:text-[32px] leading-tight mb-8" style="color: var(--ink-900);">
+        或许你也会喜欢这些
+      </h3>
+      <slot name="related" />
+    </section>
+  )}
+</div>

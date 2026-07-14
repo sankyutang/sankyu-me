@@ -1,0 +1,21 @@
+---
+export const prerender = true
+import Base from '@/layouts/Base.astro'
+import ListShell from '@/components/ListShell.astro'
+import MediaList from '@/components/react/MediaList'
+import { getMediaFeed } from '@/lib/data-source'
+
+const items = await getMediaFeed()
+---
+
+<Base title="Media · 自媒体" description="一个人在写、在录、在剪。播客《半熟电波》、视频在 Bilibili 和 YouTube。">
+  <ListShell
+    kicker="OUTPUT · 自媒体 · MEDIA"
+    en="Media"
+    blurb="一个人在写、在录、在剪。播客叫《半熟电波》、视频在 Bilibili 和 YouTube。这里是两条线合在一起的时间轴——按日期倒序,听的和看的混在一起,像一份每两周更新一次的电台节目单。"
+    count={items.length}
+    wide
+  >
+    <MediaList client:load items={items} initialFilter="all" />
+  </ListShell>
+</Base>

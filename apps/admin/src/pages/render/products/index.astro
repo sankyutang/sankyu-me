@@ -1,8 +1,38 @@
 ---
-import ProductsList from '@/templates/ProductsList.astro'
+import PaperLayout from '@/layouts/PaperLayout.astro'
+import ListShell from '@/components/ListShell.astro'
+import { ProductFeature } from '@/components/react/product'
 import { getSiteSettings, listProducts } from '@/lib/db/queries'
+import { adaptProduct } from '@/lib/adapt'
+
 const env = Astro.locals.runtime.env
-const [settings, products] = await Promise.all([getSiteSettings(env.DB), listProducts(env.DB)])
+const settings = await getSiteSettings(env.DB)
 const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+const products = (await listProducts(env.DB)).map((p) => adaptProduct(p, env.ASSET_BASE_URL))
+const stats = [
+  { label: '总 MRR', value: '$10,600', color: 'var(--accent)' },
+  { label: '商业产品', value: '3 件', color: 'var(--ink-800)' },
+  { label: '开源 · 已下线', value: '2 件', color: 'var(--accent-2)' },
+]
 ---
-<ProductsList settings={settings} env={envProps} products={products} />
+
+<PaperLayout settings={settings} env={envProps} pathname="/products" title="Products" description="一人公司养活自己的全部家底。">
+  <ListShell kicker="SHIPPED · WHAT THE SOLO CO. SELLS" en="Products" blurb="一人公司养活自己的全部家底:商业产品在跑、开源组件库、曾经的浏览器插件。所有定价都贴在桌面上,不打 enterprise tier。" count={products.length} wide>
+    <div class="mb-10 grid md:grid-cols-3 gap-4 text-[14px]">
+      {stats.map((s) => (
+        <div class="paper-card p-4 flex items-baseline justify-between">
+          <span class="kicker">{s.label}</span>
+          <span class="font-display text-[22px]" style={`color: ${s.color};`}>{s.value}</span>
+        </div>
+      ))}
+    </div>
+    <div>
+      {products.map((p, i) => (
+        <>
+          {i > 0 && <hr class="hand-divider my-2" />}
+          <ProductFeature product={p} index={i} total={products.length} />
+        </>
+      ))}
+    </div>
+  </ListShell>
+</PaperLayout>

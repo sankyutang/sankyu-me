@@ -1,0 +1,89 @@
+---
+import PaperLayout from '@/layouts/PaperLayout.astro'
+import { Avatar, SocialRow } from '@/components/react/primitives'
+import { getSiteSettings } from '@/lib/db/queries'
+import { adaptProfile, adaptSocial } from '@/lib/adapt'
+
+const env = Astro.locals.runtime.env
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+const profile = adaptProfile(settings)
+const social = adaptSocial(settings)
+
+const timeline = [
+  { year: '2026', title: '做 SoloBoard,搬到杭州', desc: '把工作室搬进一间靠河的二楼,养了一只橘猫。' },
+  { year: '2025', title: '开始一人公司', desc: '上线 Letterbox,第一个真正盈利的产品。' },
+  { year: '2024', title: '离开大厂', desc: '在某大厂当了六年前端架构师,决定停下。' },
+  { year: '2019', title: '开始公开写作', desc: '在博客和知乎写第一篇关于前端构建的长文。' },
+  { year: '2014', title: '做第一份前端工作', desc: '第一行生产代码是一个 jQuery 轮播。' },
+]
+const meta = [
+  { k: '现居', v: '杭州 · Hangzhou' },
+  { k: '职业', v: '独立开发者 · 一人公司' },
+  { k: '前职', v: '大厂前端架构师 · 6 年' },
+  { k: '在做', v: 'SoloBoard / Letterbox / PaperDesk' },
+]
+const talk = [
+  { t: '一人公司 / 独立开发', d: '怎么开始、怎么定价、怎么活下去。' },
+  { t: '前端工程化', d: '构建工具、跨团队规范、性能优化。' },
+  { t: '中文写作 / 内容创作', d: '博客、邮件订阅、播客、视频。' },
+  { t: '桌面 / 工具', d: '我用什么、为什么不用某些东西。' },
+]
+---
+
+<PaperLayout settings={settings} env={envProps} pathname="/about" title="About" description={profile.intro_zh}>
+  <div class="max-w-4xl mx-auto px-5 md:px-8 pt-12 md:pt-16 pb-16">
+    <header class="reveal mb-12 md:mb-16 grid md:grid-cols-[180px_1fr] gap-8 md:gap-12 items-start">
+      <Avatar size={160} initial={profile.avatar_initial} />
+      <div>
+        <div class="kicker mb-2">关于 · ABOUT</div>
+        <h1 class="font-display text-[44px] md:text-[60px] leading-[0.98]" style="color: var(--ink-900);">你好,我是 <span style="color: var(--accent);">{profile.name_zh}</span>。</h1>
+        <p class="mt-2 italic text-[20px]" style="color: var(--ink-500); font-family: var(--font-serif-en);">Hi, I'm {profile.name_en}.</p>
+        <p class="mt-5 text-[16px]" style="color: var(--ink-700); line-height: 1.8;">{profile.intro_zh}</p>
+      </div>
+    </header>
+
+    <hr class="hand-divider mb-12" />
+
+    <section class="reveal mb-14 grid md:grid-cols-4 gap-6 text-[14px]">
+      {meta.map((m) => (
+        <div>
+          <div class="kicker mb-1">{m.k}</div>
+          <div style="color: var(--ink-800);">{m.v}</div>
+        </div>
+      ))}
+    </section>
+
+    <section class="reveal mb-14">
+      <h2 class="font-display text-[28px] md:text-[34px] mb-6" style="color: var(--ink-900);">时间线 <span class="italic ml-2 text-[18px]" style="color: var(--ink-500); font-family: var(--font-serif-en); font-weight: 400;">· Timeline</span></h2>
+      <div class="grid gap-6 md:gap-4">
+        {timeline.map((t) => (
+          <div class="grid grid-cols-[80px_1fr] gap-5 pb-5 border-b" style="border-color: var(--ink-300);">
+            <div class="num-stamp text-[28px] leading-none">{t.year}</div>
+            <div>
+              <h4 class="font-display text-[18px]" style="color: var(--ink-900);">{t.title}</h4>
+              <p class="text-[14px] mt-1" style="color: var(--ink-700); line-height: 1.7;">{t.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="reveal mb-14">
+      <h2 class="font-display text-[28px] md:text-[34px] mb-6" style="color: var(--ink-900);">能聊些什么 <span class="italic ml-2 text-[18px]" style="color: var(--ink-500); font-family: var(--font-serif-en); font-weight: 400;">· What I can talk about</span></h2>
+      <div class="grid md:grid-cols-2 gap-5">
+        {talk.map((x) => (
+          <div class="paper-card p-5">
+            <h4 class="font-display text-[18px] mb-1" style="color: var(--ink-900);">{x.t}</h4>
+            <p class="text-[14px]" style="color: var(--ink-700); line-height: 1.7;">{x.d}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="reveal">
+      <h2 class="font-display text-[28px] md:text-[34px] mb-6" style="color: var(--ink-900);">在别处 <span class="italic ml-2 text-[18px]" style="color: var(--ink-500); font-family: var(--font-serif-en); font-weight: 400;">· Elsewhere</span></h2>
+      <div class="paper-card p-6"><SocialRow items={social} /></div>
+    </section>
+  </div>
+</PaperLayout>

@@ -1,28 +1,154 @@
 ---
+export const prerender = true
 import Base from '@/layouts/Base.astro'
-import { createReader } from '@keystatic/core/reader'
-import keystaticConfig from '../../keystatic.config'
+import { Avatar, SocialRow, NowCard, SectionHeader } from '@/components/react/primitives'
+import { PostCardLarge } from '@/components/react/cards'
+import { ProductFeature } from '@/components/react/product'
+import { PodcastFeatureCard } from '@/components/react/podcast'
+import { VideoCard } from '@/components/react/video'
+import { PageTopicCard, PageCollectionCard } from '@/components/react/pagebits'
+import { pageHref } from '@/lib/links'
+import {
+  getProfile,
+  getSocialLinks,
+  getPosts,
+  getProducts,
+  getMediaFeed,
+  getPages,
+} from '@/lib/data-source'
 
-const reader = createReader(process.cwd(), keystaticConfig)
+const [profile, social, posts, products, media, pages] = await Promise.all([
+  getProfile(),
+  getSocialLinks(),
+  getPosts(),
+  getProducts(),
+  getMediaFeed(),
+  getPages(),
+])
 
-let settings: any = null
-try {
-  settings = await reader.singletons.siteSettings.read()
-} catch {}
-
-const headline = settings?.introHeadline || 'Hi, I\'m Sankyu'
-const body = settings?.introBody || 'Systems, AI workflows, indie building, and products.'
+const topPosts = posts.slice(0, 3)
+const topProducts = products.slice(0, 3)
+const topMedia = media.slice(0, 3)
+const topics = pages.filter((p) => p.kind === 'topic').slice(0, 2)
+const collections = pages.filter((p) => p.kind === 'collection').slice(0, 1)
+const featuredPages = [...topics, ...collections]
+const staticPages = pages.filter((p) => !p.kind || p.kind === 'static')
 ---
 
 <Base isHome title="">
-  <div class="mx-auto max-w-6xl px-4 md:px-[60px]">
-    <section class="py-10 md:py-12">
-      <div class="flex max-w-3xl flex-col items-start gap-5 text-left">
-        <h1 class="text-muted-foreground w-full text-base font-medium leading-7">
-          <span class="block">{headline}</span>
-          {body && <span class="mt-3 block">{body}</span>}
+  <div class="max-w-6xl mx-auto px-5 md:px-8 pt-10 md:pt-14 pb-20">
+    {/* HERO */}
+    <section class="reveal grid md:grid-cols-[auto_1fr] gap-7 md:gap-10 items-start">
+      <div class="flex md:block items-center gap-4">
+        <Avatar size={104} initial={profile.avatar_initial} />
+        <div class="md:hidden">
+          <div class="kicker">{profile.title_en}</div>
+          <h1 class="font-display text-[32px] leading-none mt-1" style="color: var(--ink-900);">
+            {profile.name_en}
+          </h1>
+        </div>
+      </div>
+      <div class="min-w-0">
+        <div class="hidden md:flex items-baseline gap-3 flex-wrap">
+          <span class="kicker whitespace-nowrap">{profile.title_en}</span>
+          <span class="text-[12px] whitespace-nowrap" style="color: var(--ink-500); font-family: var(--font-mono);">
+            {profile.location}
+          </span>
+        </div>
+        <h1 class="hidden md:block font-display text-[72px] leading-[0.95] mt-1.5 tracking-tight" style="color: var(--ink-900);">
+          HI, I'm <span class="swoosh-underline" style="color: var(--accent);">{profile.name_en}</span>
         </h1>
+        <p class="mt-4 md:mt-5 text-[16px] md:text-[17px] max-w-[58ch]" style="color: var(--ink-700); line-height: 1.75;">
+          {profile.intro_zh}
+        </p>
+        <p class="mt-2 text-[13px] italic max-w-[58ch]" style="color: var(--ink-500); font-family: var(--font-serif-en);">
+          {profile.intro_en}
+        </p>
+        <div class="mt-5">
+          <SocialRow items={social} />
+        </div>
       </div>
     </section>
+
+    <div class="mt-10 md:mt-12 reveal">
+      <NowCard now={profile.now_zh} />
+    </div>
+
+    <hr class="hand-divider my-14 md:my-20" />
+
+    {/* POSTS */}
+    {topPosts.length > 0 && (
+      <>
+        <section class="reveal">
+          <SectionHeader en="Posts" kicker="WRITTEN" action="All essays" actionHref="/posts" />
+          <div class="grid md:grid-cols-3 gap-5 md:gap-6">
+            {topPosts.map((p) => <PostCardLarge post={p} />)}
+          </div>
+        </section>
+        <hr class="hand-divider my-14 md:my-20" />
+      </>
+    )}
+
+    {/* PRODUCTS */}
+    {topProducts.length > 0 && (
+      <>
+        <section class="reveal">
+          <SectionHeader en="Products" kicker="SHIPPED · WHAT THE SOLO CO. SELLS" action="All products" actionHref="/products" />
+          <div>
+            {topProducts.map((p, i) => (
+              <>
+                {i > 0 && <hr class="hand-divider my-2" />}
+                <ProductFeature product={p} index={i} total={products.length} />
+              </>
+            ))}
+          </div>
+        </section>
+        <hr class="hand-divider my-14 md:my-20" />
+      </>
+    )}
+
+    {/* MEDIA */}
+    {topMedia.length > 0 && (
+      <>
+        <section class="reveal">
+          <SectionHeader en="Media" kicker="OUTPUT · 听一耳朵 · 看一眼 · MEDIA" action="All media" actionHref="/media" />
+          <div class="grid md:grid-cols-3 gap-8 md:gap-10">
+            {topMedia.map((it) =>
+              it.kind === 'podcast' ? <PodcastFeatureCard pod={it} /> : <VideoCard video={it} />
+            )}
+          </div>
+        </section>
+        <hr class="hand-divider my-14 md:my-20" />
+      </>
+    )}
+
+    {/* PAGES */}
+    {pages.length > 0 && (
+      <section class="reveal">
+        <SectionHeader en="Pages" kicker="LIBRARY · 专题 / 合集 / 独立小页" action="All pages" actionHref="/pages" />
+
+        <div class="grid md:grid-cols-3 gap-5 md:gap-6">
+          {featuredPages.map((p) =>
+            p.kind === 'topic' ? <PageTopicCard page={p} /> : <PageCollectionCard page={p} />
+          )}
+        </div>
+
+        {staticPages.length > 0 && (
+          <div class="mt-8 pt-6 border-t flex items-baseline justify-between gap-6 flex-wrap" style="border-color: var(--ink-300);">
+            <div class="kicker shrink-0">独立小页 · STATIC</div>
+            <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-[13px]" style="color: var(--ink-700);">
+              {staticPages.map((p) => (
+                <a href={pageHref(p.id)} class="hand-underline inline-flex items-baseline gap-1.5">
+                  <span style="color: var(--accent); font-family: var(--font-mono);">/{p.id}</span>
+                  <span style="color: var(--ink-500); font-size: 11px; font-family: var(--font-serif-en); font-style: italic;">
+                    {p.title_en}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+    )}
   </div>
 </Base>

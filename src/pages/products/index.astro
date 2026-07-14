@@ -1,42 +1,44 @@
 ---
+export const prerender = true
 import Base from '@/layouts/Base.astro'
-import { createReader } from '@keystatic/core/reader'
-import keystaticConfig from '../../../keystatic.config'
+import ListShell from '@/components/ListShell.astro'
+import { ProductFeature } from '@/components/react/product'
+import { getProducts } from '@/lib/data-source'
 
-const reader = createReader(process.cwd(), keystaticConfig)
-const allProducts = await reader.collections.products.all()
-
-const products = allProducts.filter((p) => p.entry.status === 'active')
+const products = await getProducts()
+const stats = [
+  { label: '总 MRR', value: '$10,600', color: 'var(--accent)' },
+  { label: '商业产品', value: '3 件', color: 'var(--ink-800)' },
+  { label: '开源 · 已下线', value: '2 件', color: 'var(--accent-2)' },
+]
 ---
 
-<Base title="Products" description="Digital products and templates.">
-  <div class="container mx-auto max-w-6xl px-4 py-12">
-    <h1 class="text-3xl font-semibold tracking-tight mb-8">Products</h1>
+<Base title="Products" description="一人公司养活自己的全部家底。">
+  <ListShell
+    kicker="SHIPPED · WHAT THE SOLO CO. SELLS"
+    en="Products"
+    blurb="一人公司养活自己的全部家底:三个商业产品在跑、一个开源组件库、一个曾经的浏览器插件。所有定价都贴在桌面上,不打 enterprise tier。"
+    count={products.length}
+    wide
+  >
+    <div class="mb-10 grid md:grid-cols-3 gap-4 text-[14px]">
+      {
+        stats.map((s) => (
+          <div class="paper-card p-4 flex items-baseline justify-between">
+            <span class="kicker">{s.label}</span>
+            <span class="font-display text-[22px]" style={`color: ${s.color};`}>{s.value}</span>
+          </div>
+        ))
+      }
+    </div>
 
-    {products.length === 0 ? (
-      <p class="text-muted-foreground">暂无产品</p>
-    ) : (
-      <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {products.map((product) => (
-          <article class="border border-border rounded-xl p-5 flex flex-col gap-3">
-            {product.entry.coverImage && (
-              <img src={product.entry.coverImage} alt="" class="w-full rounded-lg aspect-[16/9] object-cover" />
-            )}
-            <h3 class="text-base font-semibold">{product.entry.name}</h3>
-            {product.entry.summary && (
-              <p class="text-muted-foreground text-sm line-clamp-2">{product.entry.summary}</p>
-            )}
-            <div class="mt-auto flex items-center justify-between pt-2">
-              {product.entry.priceText && <span class="text-sm font-medium">{product.entry.priceText}</span>}
-              {product.entry.externalUrl && (
-                <a href={product.entry.externalUrl} target="_blank" rel="noreferrer" class="text-sm font-medium hover:underline">
-                  {product.entry.ctaText || 'Get it'} →
-                </a>
-              )}
-            </div>
-          </article>
-        ))}
-      </div>
-    )}
-  </div>
+    <div>
+      {products.map((p, i) => (
+        <>
+          {i > 0 && <hr class="hand-divider my-2" />}
+          <ProductFeature product={p} index={i} total={products.length} />
+        </>
+      ))}
+    </div>
+  </ListShell>
 </Base>

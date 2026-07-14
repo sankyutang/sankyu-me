@@ -1,0 +1,67 @@
+---
+export const prerender = true
+import Base from '@/layouts/Base.astro'
+import DetailShell from '@/components/DetailShell.astro'
+import { FauxBody, RelatedGrid } from '@/components/react/shells'
+import { getPosts, getProducts, getPodcasts, getVideos, getPost } from '@/lib/data-source'
+import { buildCrossRelated } from '@/lib/related'
+
+export async function getStaticPaths() {
+  const posts = await getPosts()
+  return posts.map((p) => ({ params: { slug: p.id } }))
+}
+
+const useMock = import.meta.env.PUBLIC_USE_MOCK === '1'
+const { slug } = Astro.params
+const post = (await getPost(slug!)) ?? (await getPosts())[0]
+
+// Real markdoc content (only when not in mock mode and the entry exists).
+let contentHtml: string | null = null
+if (!useMock) {
+  try {
+    const { createReader } = await import('@keystatic/core/reader')
+    const keystaticConfig = (await import('../../../keystatic.config')).default
+    const { renderMarkdocToHtml } = await import('@/lib/markdoc')
+    const reader = createReader(process.cwd(), keystaticConfig)
+    const entry = await reader.collections.posts.read(slug!)
+    if (entry) contentHtml = renderMarkdocToHtml((await entry.content()).node)
+  } catch {}
+}
+
+const [posts, products, podcasts, videos] = await Promise.all([
+  getPosts(),
+  getProducts(),
+  getPodcasts(),
+  getVideos(),
+])
+const related = buildCrossRelated('posts', { posts, products, podcasts, videos })
+---
+
+<Base title={post.title_zh} description={post.excerpt}>
+  <DetailShell
+    kicker={post.kicker + ' · ' + post.date}
+    zh={post.title_zh}
+    en={post.title_en}
+    backHref="/posts"
+    backLabel="文章列表"
+    metaFields={[
+      { label: 'DATE', value: post.date },
+      { label: 'READING', value: post.reading || '—' },
+      { label: 'TAG', value: post.tag },
+    ]}
+    toc={[
+      { id: 'h-1', label: '开场' },
+      { id: 'h-2', label: '中段' },
+      { id: 'h-3', label: '尾声' },
+    ]}
+    hasRelated={related.length > 0}
+  >
+    {contentHtml ? (
+      <div class="prose prose-stone max-w-none" set:html={contentHtml} />
+    ) : (
+      <FauxBody paragraphs={6} headings={['', '开场', '中段', '尾声', '', '结语']} />
+    )}
+
+    <RelatedGrid slot="related" items={related} />
+  </DetailShell>
+</Base>

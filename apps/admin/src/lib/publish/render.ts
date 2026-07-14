@@ -16,24 +16,27 @@ function keyToRenderPath(key: string): string | null {
   if (key === '404.html') return '/render/notfound'
   if (key === 'sitemap.xml') return '/render/sitemap.xml'
   if (key === 'rss.xml') return '/render/rss.xml'
+  if (key === 'about/index.html') return '/render/about'
 
-  if (key === 'blog/index.html') return '/render/blog'
-  if (key === 'works/index.html') return '/render/works'
+  if (key === 'posts/index.html') return '/render/posts'
   if (key === 'products/index.html') return '/render/products'
-  if (key === 'podcast/index.html') return '/render/podcast'
-  if (key === 'videos/index.html') return '/render/videos'
+  if (key === 'media/index.html') return '/render/media'
+  if (key === 'pages/index.html') return '/render/pages'
+
+  // Media details have a two-segment base: media/podcasts/<slug>, media/videos/<slug>
+  const media = key.match(/^media\/(podcasts|videos)\/([^/]+)\/index\.html$/)
+  if (media) {
+    const [, kind, slug] = media
+    return `/render/media/${kind}/${slug}`
+  }
 
   const detail = key.match(/^([^/]+)\/([^/]+)\/index\.html$/)
   if (detail) {
     const [, base, slug] = detail
-    if (base === 'blog') return `/render/blog/${slug}`
-    if (base === 'works') return `/render/works/${slug}`
+    if (base === 'posts') return `/render/posts/${slug}`
     if (base === 'products') return `/render/products/${slug}`
-    if (base === 'podcast') return `/render/podcast/${slug}`
+    if (base === 'pages') return `/render/pages/${slug}`
   }
-
-  const topLevel = key.match(/^([^/]+)\/index\.html$/)
-  if (topLevel) return `/render/page/${topLevel[1]}`
 
   return null
 }

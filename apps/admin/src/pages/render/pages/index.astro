@@ -1,0 +1,75 @@
+---
+import PaperLayout from '@/layouts/PaperLayout.astro'
+import ListShell from '@/components/ListShell.astro'
+import { PageTopicCard, PageCollectionCard } from '@/components/react/pagebits'
+import { PageRow } from '@/components/react/cards'
+import { getSiteSettings, listPages } from '@/lib/db/queries'
+import { adaptPage } from '@/lib/adapt'
+
+const env = Astro.locals.runtime.env
+const settings = await getSiteSettings(env.DB)
+const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+const pages = (await listPages(env.DB)).map(adaptPage)
+const topics = pages.filter((p) => p.kind === 'topic')
+const collections = pages.filter((p) => p.kind === 'collection')
+const statics = pages.filter((p) => !p.kind || p.kind === 'static')
+const meta = [
+  { id: 'sec-topics', n: topics.length, en: 'TOPICS', zh: '长期更新的方向', color: 'var(--accent)' },
+  { id: 'sec-collections', n: collections.length, en: 'COLLECTIONS', zh: '互联网内容聚合', color: 'var(--accent-2)' },
+  { id: 'sec-static', n: statics.length, en: 'PAGES', zh: '独立的小页面', color: 'var(--ink-700)' },
+]
+---
+
+<PaperLayout settings={settings} env={envProps} pathname="/pages" title="Pages" description="一个活的资源中心：专题、合集、独立小页。">
+  <ListShell kicker="LIBRARY · 一个活的资源中心" en="Pages" blurb="不是文章,也不是产品——是我攒下来的方向和资料。专题长期更新,合集每周整理,加上几个独立小页面。" count={pages.length} wide>
+    <div class="mb-12 grid md:grid-cols-3 gap-4">
+      {meta.map((m) => (
+        <a href={'#' + m.id} class="paper-card p-4 text-left flex items-baseline justify-between gap-3 hover:opacity-80 transition">
+          <div class="min-w-0">
+            <div class="kicker">{m.en}</div>
+            <div class="text-[13px] mt-0.5 truncate" style="color: var(--ink-700);">{m.zh}</div>
+          </div>
+          <span class="font-display text-[32px] leading-none shrink-0" style={`color: ${m.color};`}>{m.n}</span>
+        </a>
+      ))}
+    </div>
+
+    {topics.length > 0 && (
+      <section id="sec-topics" class="mb-16 md:mb-20 scroll-mt-24">
+        <div class="grid md:grid-cols-[1fr_auto] items-end mb-6 md:mb-8 gap-4">
+          <div>
+            <div class="kicker mb-2">TOPICS · 长期专题</div>
+            <h2 class="font-display tracking-tight leading-[1.02]" style="color: var(--ink-900); font-size: clamp(34px, 4.6vw, 56px);">几个 <span class="italic" style="font-family: var(--font-serif-en); color: var(--accent);">正在长出来</span> 的方向</h2>
+          </div>
+          <p class="text-[14px] max-w-[36ch]" style="color: var(--ink-700); line-height: 1.7;">每个专题都会持续更新——新文章、新链接、新子话题。点进去看完整目录。</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-5 md:gap-6">{topics.map((t) => <PageTopicCard page={t} />)}</div>
+      </section>
+    )}
+
+    <hr class="hand-divider mb-14 md:mb-16" />
+
+    {collections.length > 0 && (
+      <section id="sec-collections" class="mb-16 md:mb-20 scroll-mt-24">
+        <div class="grid md:grid-cols-[1fr_auto] items-end mb-6 md:mb-8 gap-4">
+          <div>
+            <div class="kicker mb-2">COLLECTIONS · 内容合集</div>
+            <h2 class="font-display tracking-tight leading-[1.02]" style="color: var(--ink-900); font-size: clamp(34px, 4.6vw, 56px);">互联网上 <span class="italic" style="font-family: var(--font-serif-en); color: var(--accent-2);">值得二次保留</span> 的东西</h2>
+          </div>
+          <p class="text-[14px] max-w-[36ch]" style="color: var(--ink-700); line-height: 1.7;">文章、视频、工具——挑出真的有用的,集中放在一页里。</p>
+        </div>
+        <div class="grid md:grid-cols-2 gap-5 md:gap-6">{collections.map((c) => <PageCollectionCard page={c} />)}</div>
+      </section>
+    )}
+
+    <hr class="hand-divider mb-14 md:mb-16" />
+
+    {statics.length > 0 && (
+      <section id="sec-static" class="scroll-mt-24">
+        <div class="kicker mb-2">PAGES · 独立小页</div>
+        <h2 class="font-display tracking-tight leading-[1.02] mb-6 md:mb-8" style="color: var(--ink-900); font-size: clamp(28px, 3.6vw, 42px);">其它一些 <span class="italic" style="font-family: var(--font-serif-en); color: var(--ink-500);">独立的小页</span></h2>
+        <div class="grid md:grid-cols-2 gap-x-10">{statics.map((p) => <PageRow p={p} />)}</div>
+      </section>
+    )}
+  </ListShell>
+</PaperLayout>
