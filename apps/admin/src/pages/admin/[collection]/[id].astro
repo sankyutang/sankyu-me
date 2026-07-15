@@ -2,6 +2,7 @@
 import AdminLayout from '@/layouts/AdminLayout.astro'
 import { SCHEMAS } from '@/lib/admin/schemas'
 import type { Collection } from '@/lib/db/types'
+import { ENABLE_STREAM_VIDEO_UPLOAD } from '@/lib/media'
 
 const { collection, id } = Astro.params as { collection: Collection; id: string }
 const schema = SCHEMAS[collection]
@@ -10,6 +11,8 @@ if (!schema) return Astro.redirect('/admin')
 const env = Astro.locals.runtime?.env
 const db = env!.DB
 const isNew = id === 'new'
+const supportsBodyMedia = (collection === 'posts' || collection === 'pages')
+const supportsBodyVideo = supportsBodyMedia && ENABLE_STREAM_VIDEO_UPLOAD
 const row: Record<string, any> = isNew
   ? Object.fromEntries(schema.fields.map((f) => [f.key, f.defaultValue ?? '']))
   : (await db.prepare(`SELECT * FROM ${collection} WHERE id = ?1`).bind(Number(id)).first()) ?? {}
@@ -21,6 +24,7 @@ if (!isNew && Object.keys(row).length === 0) return Astro.redirect(`/admin/${col
     <input type="hidden" name="__id" value={isNew ? '' : id} />
     {schema.fields.map((f) => {
       const v = row[f.key] ?? ''
+      const isBodyMediaEditor = supportsBodyMedia && f.key === 'content_markdoc' && f.type === 'markdoc'
       return (
         <div>
           <label class="block text-sm font-medium mb-1">{f.label}</label>
@@ -49,7 +53,17 @@ if (!isNew && Object.keys(row).length === 0) return Astro.redirect(`/admin/${col
             <textarea name={f.key} rows="3" class="w-full bg-background border border-border rounded px-3 py-2 text-sm">{v}</textarea>
           )}
           {f.type === 'markdoc' && (
-            <textarea name={f.key} rows="20" class="w-full font-mono bg-background border border-border rounded px-3 py-2 text-sm">{v}</textarea>
+            <div class="space-y-2">
+              {isBodyMediaEditor && (
+                <div class="flex flex-wrap items-center gap-2 rounded border border-border bg-muted/30 p-2">
+                  <span class="mr-1 text-xs text-muted-foreground">插入正文媒体</span>
+                  <button type="button" data-media-action="image" class="rounded border border-border bg-background px-2 py-1 text-xs hover:bg-muted">插入图片</button>
+                  {supportsBodyVideo && <button type="button" data-media-action="video" class="rounded border border-border bg-background px-2 py-1 text-xs hover:bg-muted">插入视频</button>}
+                  <span class="text-xs text-muted-foreground">图片 ≤10 MB</span>
+                </div>
+              )}
+              <textarea name={f.key} rows="20" data-markdoc-editor={isBodyMediaEditor ? 'true' : undefined} class="w-full font-mono bg-background border border-border rounded px-3 py-2 text-sm">{v}</textarea>
+            </div>
           )}
           {f.type === 'json' && (
             <textarea name={f.key} rows="4" class="w-full font-mono bg-background border border-border rounded px-3 py-2 text-sm">{v || (f.defaultValue ?? '[]')}</textarea>
@@ -74,7 +88,33 @@ if (!isNew && Object.keys(row).length === 0) return Astro.redirect(`/admin/${col
     </div>
   </form>
 
-  <script type="module" is:inline define:vars={{ collection, id: isNew ? null : id }}>
+  {supportsBodyMedia && (
+    <>
+      <input id="body-media-file" type="file" class="hidden" />
+      <dialog id="body-media-dialog" class="w-full max-w-md rounded-lg border border-border bg-background p-0 text-foreground backdrop:bg-black/60">
+        <form id="body-media-form" method="dialog" class="space-y-4 p-5">
+          <div>
+            <h2 id="body-media-title" class="text-base font-semibold">插入媒体</h2>
+            <p id="body-media-file-name" class="mt-1 break-all text-xs text-muted-foreground"></p>
+          </div>
+          <div>
+            <label id="body-media-text-label" for="body-media-text" class="mb-1 block text-sm font-medium">替代文本</label>
+            <input id="body-media-text" type="text" maxlength="240" class="w-full rounded border border-border bg-background px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label for="body-media-caption" class="mb-1 block text-sm font-medium">图注 / 说明（可选）</label>
+            <input id="body-media-caption" type="text" maxlength="500" class="w-full rounded border border-border bg-background px-3 py-2 text-sm" />
+          </div>
+          <div class="flex justify-end gap-2">
+            <button type="button" id="body-media-cancel" class="rounded border border-border px-3 py-2 text-sm">取消</button>
+            <button type="submit" id="body-media-submit" class="rounded bg-primary px-3 py-2 text-sm text-primary-foreground">上传并插入</button>
+          </div>
+        </form>
+      </dialog>
+    </>
+  )}
+
+  <script type="module" is:inline define:vars={{ collection, id: isNew ? null : id, supportsBodyMedia, supportsBodyVideo }}>
     const form = document.getElementById('entry-form')
     const status = document.getElementById('form-status')
     const btnDelete = document.getElementById('btn-delete')
@@ -96,6 +136,138 @@ if (!isNew && Object.keys(row).length === 0) return Astro.redirect(`/admin/${col
         status.textContent = '已上传'
       })
     })
+
+    const mediaEditor = form.querySelector('[data-markdoc-editor]')
+    const mediaFileInput = document.getElementById('body-media-file')
+    const mediaDialog = document.getElementById('body-media-dialog')
+    const mediaForm = document.getElementById('body-media-form')
+    const mediaTitle = document.getElementById('body-media-title')
+    const mediaFileName = document.getElementById('body-media-file-name')
+    const mediaTextLabel = document.getElementById('body-media-text-label')
+    const mediaText = document.getElementById('body-media-text')
+    const mediaCaption = document.getElementById('body-media-caption')
+    const mediaCancel = document.getElementById('body-media-cancel')
+    let pendingMediaFile = null
+    let pendingMediaKind = null
+
+    function escapeMarkdocAttribute(value) {
+      return `"${value.trim().replace(/[\r\n]+/g, ' ').replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
+    }
+
+    function insertMarkdocAtCursor(markdoc) {
+      if (!mediaEditor) return
+      const start = mediaEditor.selectionStart ?? mediaEditor.value.length
+      const end = mediaEditor.selectionEnd ?? start
+      const before = mediaEditor.value.slice(0, start)
+      const after = mediaEditor.value.slice(end)
+      const prefix = before && !before.endsWith('\n\n') ? '\n\n' : ''
+      const suffix = after && !after.startsWith('\n\n') ? '\n\n' : ''
+      const inserted = `${prefix}${markdoc}${suffix}`
+      mediaEditor.setRangeText(inserted, start, end, 'end')
+      mediaEditor.dispatchEvent(new Event('input', { bubbles: true }))
+      mediaEditor.focus()
+    }
+
+    async function responseError(response) {
+      try {
+        const payload = await response.json()
+        return payload.error || '上传失败'
+      } catch {
+        return (await response.text()) || '上传失败'
+      }
+    }
+
+    function uploadVideoToStream(uploadURL, file) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('POST', uploadURL)
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) status.textContent = `视频上传中… ${Math.round((event.loaded / event.total) * 100)}%`
+        }
+        xhr.onerror = () => reject(new Error('视频上传网络错误'))
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve()
+          else reject(new Error(`视频上传失败 (${xhr.status})`))
+        }
+        const uploadForm = new FormData()
+        uploadForm.append('file', file)
+        xhr.send(uploadForm)
+      })
+    }
+
+    if (supportsBodyMedia && mediaEditor && mediaFileInput && mediaDialog && mediaForm) {
+      document.querySelectorAll('[data-media-action]').forEach((button) => {
+        button.addEventListener('click', () => {
+          pendingMediaKind = button.getAttribute('data-media-action')
+          pendingMediaFile = null
+          mediaFileInput.value = ''
+          mediaFileInput.accept = pendingMediaKind === 'image'
+            ? 'image/jpeg,image/png,image/gif,image/webp,image/avif'
+            : 'video/mp4,video/webm,video/quicktime,video/x-matroska,video/x-msvideo,video/x-flv,video/mpeg,video/mp2t,video/3gpp'
+          mediaFileInput.click()
+        })
+      })
+
+      mediaFileInput.addEventListener('change', () => {
+        const file = mediaFileInput.files?.[0]
+        if (!file || !pendingMediaKind) return
+        pendingMediaFile = file
+        mediaText.value = ''
+        mediaCaption.value = ''
+        mediaFileName.textContent = file.name
+        const isImage = pendingMediaKind === 'image'
+        mediaTitle.textContent = isImage ? '插入图片' : '插入视频'
+        mediaTextLabel.textContent = isImage ? '替代文本（必填）' : '视频标题（可选）'
+        mediaText.placeholder = isImage ? '描述图片内容' : '例如：产品演示'
+        mediaText.required = isImage
+        mediaDialog.showModal()
+      })
+
+      mediaCancel.addEventListener('click', () => mediaDialog.close())
+
+      mediaForm.addEventListener('submit', async (event) => {
+        event.preventDefault()
+        if (!pendingMediaFile || !pendingMediaKind || !mediaForm.reportValidity()) return
+
+        const file = pendingMediaFile
+        const kind = pendingMediaKind
+        const text = mediaText.value.trim()
+        const caption = mediaCaption.value.trim()
+        mediaDialog.close()
+        try {
+          let markdoc
+          if (kind === 'image') {
+            status.textContent = '图片上传中…'
+            const uploadForm = new FormData()
+            uploadForm.append('file', file)
+            const response = await fetch('/api/uploads/r2', { method: 'POST', body: uploadForm })
+            if (!response.ok) throw new Error(await responseError(response))
+            const uploaded = await response.json()
+            markdoc = `{% image src=${escapeMarkdocAttribute(uploaded.src)} alt=${escapeMarkdocAttribute(text)}${caption ? ` caption=${escapeMarkdocAttribute(caption)}` : ''} /%}`
+            status.textContent = '图片已上传并插入正文'
+          } else {
+            status.textContent = '正在创建 Stream 上传链接…'
+            const response = await fetch('/api/uploads/stream', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: file.name, size: file.size, type: file.type }),
+            })
+            if (!response.ok) throw new Error(await responseError(response))
+            const uploaded = await response.json()
+            await uploadVideoToStream(uploaded.uploadURL, file)
+            markdoc = `{% streamVideo uid=${escapeMarkdocAttribute(uploaded.uid)}${text ? ` title=${escapeMarkdocAttribute(text)}` : ''}${caption ? ` caption=${escapeMarkdocAttribute(caption)}` : ''} /%}`
+            status.textContent = '视频已上传并插入正文，Cloudflare Stream 正在转码'
+          }
+          insertMarkdocAtCursor(markdoc)
+        } catch (error) {
+          status.textContent = `上传失败: ${error instanceof Error ? error.message : '未知错误'}`
+        } finally {
+          pendingMediaFile = null
+          pendingMediaKind = null
+          mediaFileInput.value = ''
+        }
+      })
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault()

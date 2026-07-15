@@ -8,6 +8,7 @@
     "build": "astro build",
     "preview": "wrangler pages dev ./dist",
     "deploy": "astro build && wrangler pages deploy ./dist",
+    "test": "tsx --test src/lib/media.test.ts",
     "db:migrate:local": "wrangler d1 migrations apply sankyume_admin --local",
     "db:migrate:remote": "wrangler d1 migrations apply sankyume_admin --remote"
   },

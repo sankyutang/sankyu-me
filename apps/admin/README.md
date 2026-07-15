@@ -55,6 +55,28 @@ wrangler pages secret put CLOUDFLARE_ZONE_ID
 
 Cache purge is best-effort — pipeline does not fail if these are absent.
 
+## Body media uploads
+
+Post and Page Markdoc bodies can upload images to the bound R2 bucket. The
+Cloudflare Stream video upload implementation is retained but currently
+disabled by `ENABLE_STREAM_VIDEO_UPLOAD` in `src/lib/media.ts`, so no Stream
+subscription or variables are needed now. When enabling it later, configure
+these values for both production and preview deployments:
+
+```bash
+# Non-secret Pages variables
+CLOUDFLARE_ACCOUNT_ID=<account id>
+CLOUDFLARE_STREAM_CUSTOMER_CODE=<Stream customer code>
+
+# Encrypted Pages secret; create with the minimum Stream Write permission
+wrangler pages secret put CLOUDFLARE_STREAM_API_TOKEN
+```
+
+Images are limited to 10 MB (JPEG, PNG, GIF, WebP, AVIF). Once enabled, videos
+use a one-time Stream direct-upload URL, are limited to 200 MB, and reserve up
+to 30 minutes of Stream storage. Video files upload from the browser directly
+to Stream; they do not pass through the Pages application.
+
 ## Routes
 
 | Path                        | Purpose                          |
@@ -68,6 +90,7 @@ Cache purge is best-effort — pipeline does not fail if these are absent.
 | `/api/site-settings`        | PUT: save + full republish       |
 | `/api/republish`            | POST: rebuild every page         |
 | `/api/uploads/r2`           | Multipart image upload to R2     |
+| `/api/uploads/stream`       | Create one-time Stream video upload URL |
 
 ## Authentication
 

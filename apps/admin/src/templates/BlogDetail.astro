@@ -4,7 +4,10 @@ import { renderMarkdoc } from '@/lib/markdoc'
 import type { Post, SiteSettings } from '@/lib/db/types'
 interface Props { settings: SiteSettings; env: any; post: Post }
 const { settings, env, post } = Astro.props
-const html = renderMarkdoc(post.content_markdoc)
+const html = renderMarkdoc(post.content_markdoc, {
+  siteBaseUrl: env.siteUrl,
+  streamCustomerCode: env.streamCustomerCode,
+})
 ---
 <Layout
   settings={settings}

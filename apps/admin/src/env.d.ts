@@ -10,6 +10,9 @@ interface Env {
   ASSET_BASE_URL: string
   CLOUDFLARE_API_TOKEN?: string
   CLOUDFLARE_ZONE_ID?: string
+  CLOUDFLARE_ACCOUNT_ID?: string
+  CLOUDFLARE_STREAM_API_TOKEN?: string
+  CLOUDFLARE_STREAM_CUSTOMER_CODE?: string
 }
 
 declare namespace App {

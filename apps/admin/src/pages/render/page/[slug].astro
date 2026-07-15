@@ -6,6 +6,10 @@ const slug = Astro.params.slug as string
 const page = await getPage(env.DB, slug)
 if (!page) return new Response('not found', { status: 404 })
 const settings = await getSiteSettings(env.DB)
-const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+const envProps = {
+  siteUrl: env.SITE_BASE_URL,
+  assetBase: env.ASSET_BASE_URL,
+  streamCustomerCode: env.CLOUDFLARE_STREAM_CUSTOMER_CODE,
+}
 ---
 <PageDetail settings={settings} env={envProps} page={page} />
