@@ -55,6 +55,28 @@ wrangler pages secret put CLOUDFLARE_ZONE_ID
 
 Cache purge is best-effort — pipeline does not fail if these are absent.
 
+## Public-site release
+
+Public HTML is rendered dynamically by Admin and stored in R2, but Astro's
+hashed `/_astro/*` files come from the Admin build. Release them together:
+
+```bash
+cd apps/admin
+export CF_ACCESS_CLIENT_ID=<Access service-token client id>
+export CF_ACCESS_CLIENT_SECRET=<Access service-token client secret>
+npm run release:production
+```
+
+The release builds once, uploads `dist/_astro/**` to `SITE_BUCKET` with
+immutable caching, deploys that same `dist` to Pages, calls the protected
+`/api/republish` endpoint, then verifies the public CSS references. It never
+deletes old hashed assets.
+
+Astro sessions require a `SESSION` KV binding. Configure the Pages project
+deployment environments separately: Production uses
+`sankyume-admin-session-production`, and Preview uses
+`sankyume-admin-session-preview` (both with the binding name `SESSION`).
+
 ## Body media uploads
 
 Post and Page Markdoc bodies can upload images to the bound R2 bucket. The

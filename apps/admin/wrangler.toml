@@ -13,6 +13,10 @@ migrations_dir = "migrations"
 binding = "SITE_BUCKET"
 bucket_name = "sankyume-site"
 
+[[kv_namespaces]]
+binding = "SESSION"
+id = "4f9dec576aef40308d0677699d0484f4"
+
 [vars]
 SITE_BASE_URL = "https://sankyu.me"
 ASSET_BASE_URL = "https://sankyu.me/assets"
@@ -22,3 +26,5 @@ ASSET_BASE_URL = "https://sankyu.me/assets"
 #   CLOUDFLARE_STREAM_API_TOKEN  (Stream Write scope)
 # Set as non-secret Pages variables in production and preview:
 #   CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_STREAM_CUSTOMER_CODE
+# `SESSION` is required by Astro's Cloudflare adapter. The Pages project maps
+# Preview to its dedicated preview namespace through deployment configuration.

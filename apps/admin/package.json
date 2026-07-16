@@ -8,7 +8,10 @@
     "build": "astro build",
     "preview": "wrangler pages dev ./dist",
     "deploy": "astro build && wrangler pages deploy ./dist",
-    "test": "tsx --test src/lib/media.test.ts",
+    "sync:public-assets": "node scripts/public-assets.mjs",
+    "verify:public-css": "node scripts/verify-public-css.mjs",
+    "release:production": "npm run build && npm run sync:public-assets && npm run db:migrate:remote && wrangler pages deploy ./dist --project-name sankyume-admin && node scripts/republish-and-verify.mjs",
+    "test": "tsx --test src/lib/media.test.ts scripts/public-assets.test.mjs",
     "db:migrate:local": "wrangler d1 migrations apply sankyume_admin --local",
     "db:migrate:remote": "wrangler d1 migrations apply sankyume_admin --remote"
   },
