@@ -11,8 +11,6 @@ import type {
   SiteSettings,
   Video,
   VideoRow,
-  Work,
-  WorkRow,
 } from './types'
 
 function parseJson<T>(value: string | null | undefined, fallback: T): T {
@@ -32,9 +30,6 @@ export const hydrate = {
       related_posts: parseJson<string[]>(row.related_posts, []),
       featured: !!row.featured,
     }
-  },
-  work(row: WorkRow): Work {
-    return { ...row, featured: !!row.featured }
   },
   product(row: ProductRow): Product {
     return {
@@ -80,21 +75,6 @@ export async function getPost(db: D1Database, slug: string) {
 export async function getPostById(db: D1Database, id: number) {
   const row = await db.prepare('SELECT * FROM posts WHERE id = ?1').bind(id).first<PostRow>()
   return row ? hydrate.post(row) : null
-}
-
-// ---------- Works ----------
-export async function listWorks(db: D1Database, opts: { status?: string } = {}) {
-  const where = opts.status ? 'WHERE status = ?1' : ''
-  const stmt = db.prepare(
-    `SELECT * FROM works ${where} ORDER BY featured DESC, published_at DESC, id DESC`
-  )
-  const result = opts.status ? await stmt.bind(opts.status).all<WorkRow>() : await stmt.all<WorkRow>()
-  return (result.results ?? []).map(hydrate.work)
-}
-
-export async function getWork(db: D1Database, slug: string) {
-  const row = await db.prepare('SELECT * FROM works WHERE slug = ?1').bind(slug).first<WorkRow>()
-  return row ? hydrate.work(row) : null
 }
 
 // ---------- Products ----------

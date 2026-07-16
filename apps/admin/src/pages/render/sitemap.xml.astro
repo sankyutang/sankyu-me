@@ -1,15 +1,14 @@
 ---
 import Sitemap from '@/templates/Sitemap.astro'
-import { getSiteSettings, listPodcasts, listPosts, listProducts, listWorks } from '@/lib/db/queries'
+import { getSiteSettings, listPodcasts, listPosts, listProducts } from '@/lib/db/queries'
 const env = Astro.locals.runtime.env
-const [settings, posts, works, products, podcasts] = await Promise.all([
+const [settings, posts, products, podcasts] = await Promise.all([
   getSiteSettings(env.DB),
   listPosts(env.DB, { status: 'published' }),
-  listWorks(env.DB, { status: 'published' }),
   listProducts(env.DB),
   listPodcasts(env.DB, { status: 'published' }),
 ])
 const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
 Astro.response.headers.set('content-type', 'application/xml; charset=utf-8')
 ---
-<Sitemap settings={settings} env={envProps} posts={posts} works={works} products={products} podcasts={podcasts} />
+<Sitemap settings={settings} env={envProps} posts={posts} products={products} podcasts={podcasts} />

@@ -1,26 +1,23 @@
 ---
-import type { Podcast, Post, Product, SiteSettings, Work } from '@/lib/db/types'
+import type { Podcast, Post, Product, SiteSettings } from '@/lib/db/types'
 interface Props {
   settings: SiteSettings
   env: { siteUrl: string; assetBase: string }
   posts: Post[]
-  works: Work[]
   products: Product[]
   podcasts: Podcast[]
 }
-const { settings, env, posts, works, products, podcasts } = Astro.props
+const { settings, env, posts, products, podcasts } = Astro.props
 const base = (settings.siteUrl || env.siteUrl).replace(/\/$/, '')
 
 const urls: { loc: string; lastmod?: string }[] = [
   { loc: `${base}/` },
   { loc: `${base}/blog` },
-  { loc: `${base}/works` },
   { loc: `${base}/products` },
   { loc: `${base}/podcast` },
   { loc: `${base}/videos` },
 ]
 for (const p of posts) urls.push({ loc: `${base}/blog/${p.slug}`, lastmod: p.updated_at })
-for (const w of works) urls.push({ loc: `${base}/works/${w.slug}`, lastmod: w.updated_at })
 for (const p of products) urls.push({ loc: `${base}/products/${p.slug}`, lastmod: p.updated_at })
 for (const p of podcasts) urls.push({ loc: `${base}/podcast/${p.slug}`, lastmod: p.updated_at })
 ---

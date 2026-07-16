@@ -9,7 +9,6 @@ import {
   listPosts,
   listProducts,
   listVideos,
-  listWorks,
 } from '../db/queries'
 
 export interface PublishContext {
@@ -32,6 +31,17 @@ async function logEntry(db: D1Database, path: string, hash: string | null, statu
     .prepare('INSERT INTO publish_log(path, content_hash, status, message) VALUES (?1, ?2, ?3, ?4)')
     .bind(path, hash, status, message ?? null)
     .run()
+}
+
+async function listObjectKeys(bucket: R2Bucket, prefix: string): Promise<string[]> {
+  const keys: string[] = []
+  let cursor: string | undefined
+  do {
+    const page = await bucket.list({ prefix, cursor })
+    keys.push(...page.objects.map((object) => object.key))
+    cursor = page.truncated ? page.cursor : undefined
+  } while (cursor)
+  return keys
 }
 
 async function processPlan(ctx: PublishContext, plan: { render: string[]; remove: string[] }): Promise<PublishReport> {
@@ -91,9 +101,8 @@ export async function publishEntity(
 }
 
 export async function publishFullSite(ctx: PublishContext): Promise<PublishReport> {
-  const [posts, works, products, podcasts, videos, pages] = await Promise.all([
+  const [posts, products, podcasts, videos, pages] = await Promise.all([
     listPosts(ctx.db),
-    listWorks(ctx.db),
     listProducts(ctx.db),
     listPodcasts(ctx.db),
     listVideos(ctx.db),
@@ -101,11 +110,13 @@ export async function publishFullSite(ctx: PublishContext): Promise<PublishRepor
   ])
   const plan = planFullSite({
     posts: posts.map((p) => p.slug),
-    works: works.map((w) => w.slug),
     products: products.map((p) => p.slug),
     podcasts: podcasts.map((p) => p.slug),
     videos: videos.map((v) => v.slug),
     pages: pages.map((p) => p.slug),
   })
+  // Works was retired. Remove all legacy static objects during a full publish
+  // so the public worker cannot continue serving obsolete routes.
+  plan.remove.push(...await listObjectKeys(ctx.bucket, 'works/'))
   return processPlan(ctx, plan)
 }

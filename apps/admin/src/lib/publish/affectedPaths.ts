@@ -48,8 +48,6 @@ export function detailBaseFor(collection: Collection): string {
   switch (collection) {
     case 'posts':
       return 'blog'
-    case 'works':
-      return 'works'
     case 'products':
       return 'products'
     case 'podcasts':
@@ -69,16 +67,14 @@ export function listKeyFor(collection: Collection): string {
 // Used by site_settings: rebuild everything.
 export function planFullSite(slugs: {
   posts: string[]
-  works: string[]
   products: string[]
   podcasts: string[]
   videos: string[]
   pages: string[]
 }): PathPlan {
   const render: string[] = ['index.html', 'sitemap.xml', 'rss.xml', '404.html']
-  render.push('blog/index.html', 'works/index.html', 'products/index.html', 'podcast/index.html', 'videos/index.html')
+  render.push('blog/index.html', 'products/index.html', 'podcast/index.html', 'videos/index.html')
   for (const s of slugs.posts) render.push(`blog/${s}/index.html`)
-  for (const s of slugs.works) render.push(`works/${s}/index.html`)
   for (const s of slugs.products) render.push(`products/${s}/index.html`)
   for (const s of slugs.podcasts) render.push(`podcast/${s}/index.html`)
   // videos collection currently only has a list view

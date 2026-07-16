@@ -1,7 +1,6 @@
 export type Collection =
   | 'posts'
   | 'pages'
-  | 'works'
   | 'products'
   | 'podcasts'
   | 'videos'
@@ -32,24 +31,6 @@ export interface PageRow {
   id: number
   slug: string
   title: string
-  seo_title: string | null
-  seo_description: string | null
-  og_image: string | null
-  content_markdoc: string
-  created_at: string
-  updated_at: string
-}
-
-export interface WorkRow {
-  id: number
-  slug: string
-  title: string
-  summary: string | null
-  cover_image: string | null
-  status: 'draft' | 'published'
-  published_at: string | null
-  featured: 0 | 1
-  external_url: string | null
   seo_title: string | null
   seo_description: string | null
   og_image: string | null
@@ -137,7 +118,6 @@ export type Post = Omit<PostRow, 'tags' | 'related_posts' | 'featured'> & {
   related_posts: string[]
   featured: boolean
 }
-export type Work = Omit<WorkRow, 'featured'> & { featured: boolean }
 export type Product = Omit<
   ProductRow,
   'tags' | 'highlights' | 'audience' | 'faq' | 'related_posts' | 'featured'

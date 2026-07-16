@@ -18,7 +18,6 @@ function keyToRenderPath(key: string): string | null {
   if (key === 'rss.xml') return '/render/rss.xml'
 
   if (key === 'blog/index.html') return '/render/blog'
-  if (key === 'works/index.html') return '/render/works'
   if (key === 'products/index.html') return '/render/products'
   if (key === 'podcast/index.html') return '/render/podcast'
   if (key === 'videos/index.html') return '/render/videos'
@@ -27,7 +26,6 @@ function keyToRenderPath(key: string): string | null {
   if (detail) {
     const [, base, slug] = detail
     if (base === 'blog') return `/render/blog/${slug}`
-    if (base === 'works') return `/render/works/${slug}`
     if (base === 'products') return `/render/products/${slug}`
     if (base === 'podcast') return `/render/podcast/${slug}`
   }
