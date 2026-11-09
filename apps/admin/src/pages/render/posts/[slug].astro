@@ -4,7 +4,7 @@ import DetailShell from '@/components/DetailShell.astro'
 import { FauxBody, RelatedGrid } from '@/components/react/shells'
 import { renderMarkdoc } from '@/lib/markdoc'
 import { getSiteSettings, getPost, listPosts, listProducts, listPodcasts, listVideos } from '@/lib/db/queries'
-import { adaptPost, adaptProduct, adaptPodcast, adaptVideo } from '@/lib/adapt'
+import { adaptPost, adaptProduct, adaptPodcast, adaptVideo, absoluteAssetUrl } from '@/lib/adapt'
 import { buildCrossRelated } from '@/lib/related'
 
 const env = Astro.locals.runtime.env
@@ -16,6 +16,7 @@ const row = await getPost(env.DB, slug!)
 if (!row) return new Response('Not found', { status: 404 })
 const post = adaptPost(row, env.ASSET_BASE_URL)
 const contentHtml = renderMarkdoc(row.content_markdoc)
+const ogImage = absoluteAssetUrl(env.SITE_BASE_URL, env.ASSET_BASE_URL, row.og_image, row.cover_image)
 
 const [posts, products, podcasts, videos] = await Promise.all([
   listPosts(env.DB, { status: 'published' }),
@@ -31,11 +32,13 @@ const related = buildCrossRelated('posts', {
 })
 ---
 
-<PaperLayout settings={settings} env={envProps} pathname={`/posts/${slug}`} title={post.title_zh} description={post.excerpt}>
+<PaperLayout settings={settings} env={envProps} pathname={`/posts/${slug}`} title={post.title_zh} description={post.excerpt} ogImage={ogImage}>
   <DetailShell
     kicker={post.kicker + ' · ' + post.date}
     zh={post.title_zh}
     en={post.title_en}
+    coverSrc={post.cover_src}
+    coverAlt={post.title_zh}
     backHref="/posts"
     backLabel="文章列表"
     metaFields={[

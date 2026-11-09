@@ -33,7 +33,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     },
   })
 
-  const base_url = (env.ASSET_BASE_URL || env.SITE_BASE_URL || '').replace(/\/$/, '')
+  // Keys are site-root-relative (editor/…); prefer SITE_BASE_URL so the public
+  // URL matches the R2 key. Strip a legacy trailing /assets if present.
+  const rawBase = (env.SITE_BASE_URL || env.ASSET_BASE_URL || '').replace(/\/$/, '')
+  const base_url = rawBase.replace(/\/assets$/i, '')
   const src = `${base_url}/${key}`
   return Response.json({ key, src })
 }

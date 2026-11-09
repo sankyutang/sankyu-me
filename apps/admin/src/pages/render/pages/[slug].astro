@@ -7,7 +7,7 @@ import { PAGE_KIND_META } from '@/components/react/pagebits'
 import { pageHref } from '@/lib/links'
 import { renderMarkdoc } from '@/lib/markdoc'
 import { getSiteSettings, getPage, listPages, listPosts, listProducts, listPodcasts, listVideos } from '@/lib/db/queries'
-import { adaptPage, adaptPost, adaptProduct, adaptPodcast, adaptVideo } from '@/lib/adapt'
+import { adaptPage, adaptPost, adaptProduct, adaptPodcast, adaptVideo, absoluteAssetUrl } from '@/lib/adapt'
 import { buildCrossRelated } from '@/lib/related'
 
 const env = Astro.locals.runtime.env
@@ -20,6 +20,7 @@ if (!row) return new Response('Not found', { status: 404 })
 const p = adaptPage(row)
 const kind = p.kind || 'static'
 const contentHtml = renderMarkdoc(row.content_markdoc)
+const ogImage = absoluteAssetUrl(env.SITE_BASE_URL, env.ASSET_BASE_URL, row.og_image)
 
 const allPages = (await listPages(env.DB)).map(adaptPage)
 const staticRelated = allPages.filter((x) => x.id !== p.id).slice(0, 3).map((x) => ({
@@ -46,7 +47,7 @@ const crossRelated = buildCrossRelated('pages', {
 })
 ---
 
-<PaperLayout settings={settings} env={envProps} pathname={`/pages/${slug}`} title={p.title_zh} description={p.desc}>
+<PaperLayout settings={settings} env={envProps} pathname={`/pages/${slug}`} title={p.title_zh} description={p.desc} ogImage={ogImage}>
   {kind === 'static' ? (
     <DetailShell
       kicker={'PAGE · ' + (p.category || '静态页')}

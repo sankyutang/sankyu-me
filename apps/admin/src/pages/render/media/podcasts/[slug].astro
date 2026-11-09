@@ -5,7 +5,7 @@ import { FauxBody, RelatedGrid } from '@/components/react/shells'
 import { Icon } from '@/components/react/icons'
 import { renderMarkdoc } from '@/lib/markdoc'
 import { getSiteSettings, getPodcast, listPodcasts, listPosts, listProducts, listVideos } from '@/lib/db/queries'
-import { adaptPodcast, adaptPost, adaptProduct, adaptVideo } from '@/lib/adapt'
+import { adaptPodcast, adaptPost, adaptProduct, adaptVideo, absoluteAssetUrl, assetUrl } from '@/lib/adapt'
 import { buildCrossRelated } from '@/lib/related'
 
 const env = Astro.locals.runtime.env
@@ -17,6 +17,8 @@ const row = await getPodcast(env.DB, slug!)
 if (!row) return new Response('Not found', { status: 404 })
 const p = adaptPodcast(row)
 const contentHtml = renderMarkdoc(row.content_markdoc)
+const coverSrc = assetUrl(env.ASSET_BASE_URL, row.cover_image)
+const ogImage = absoluteAssetUrl(env.SITE_BASE_URL, env.ASSET_BASE_URL, row.og_image, row.cover_image)
 
 const [posts, products, podcasts, videos] = await Promise.all([
   listPosts(env.DB, { status: 'published' }),
@@ -32,11 +34,13 @@ const related = buildCrossRelated('podcasts', {
 })
 ---
 
-<PaperLayout settings={settings} env={envProps} pathname={`/media/podcasts/${slug}`} title={p.title} description={p.desc}>
+<PaperLayout settings={settings} env={envProps} pathname={`/media/podcasts/${slug}`} title={p.title} description={p.desc} ogImage={ogImage}>
   <DetailShell
     kicker={'EPISODE ' + p.ep + ' · ' + p.date}
     zh={p.title}
     en={'Half-Cooked Radio · ' + p.guest}
+    coverSrc={coverSrc}
+    coverAlt={p.title}
     backHref="/media"
     backLabel="Media · 自媒体"
     metaFields={[

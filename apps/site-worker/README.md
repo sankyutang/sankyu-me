@@ -9,6 +9,7 @@ bucket the admin app writes to.
 - `/foo/` → `foo/index.html`
 - `/foo` (no extension) → `foo/index.html`
 - `/foo.png` → `foo.png` (passes through)
+- `/assets/editor/…` → falls back to `editor/…` when the `assets/`-prefixed key is missing (legacy upload URLs)
 - Anything missing → `404.html` (status 404)
 
 Cache headers come from the R2 object's `httpMetadata.cacheControl`. Falls back to

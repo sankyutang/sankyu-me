@@ -15,7 +15,9 @@ bucket_name = "sankyume-site"
 
 [vars]
 SITE_BASE_URL = "https://sankyu.me"
-ASSET_BASE_URL = "https://sankyu.me/assets"
+# Public origin for R2 object keys (editor/…, images/…). Must NOT include a
+# trailing /assets — upload keys are stored at the site root (e.g. editor/…).
+ASSET_BASE_URL = "https://sankyu.me"
 # Set via `wrangler pages secret put` in CI/prod:
 #   CLOUDFLARE_API_TOKEN  (zone cache purge scope)
 #   CLOUDFLARE_ZONE_ID

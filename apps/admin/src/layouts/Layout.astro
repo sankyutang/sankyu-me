@@ -28,7 +28,8 @@ const siteName = settings.siteName || 'sankyu.me'
 const pageTitle = title ? `${title} · ${siteName}` : (settings.defaultSeoTitle || siteName)
 const desc = description || settings.defaultSeoDescription || settings.siteDescription
 const siteUrl = (settings.siteUrl || env.siteUrl || 'https://sankyu.me').replace(/\/$/, '')
-const og = ogImage || settings.defaultOgImage || `${siteUrl}/images/og-default.png`
+const rawOg = ogImage || settings.defaultOgImage || `${siteUrl}/images/og-default.png`
+const og = /^https?:\/\//.test(rawOg) ? rawOg : `${siteUrl}${rawOg.startsWith('/') ? rawOg : `/${rawOg}`}`
 const canonical = canonicalUrl || `${siteUrl}${pathname}`
 const nav = settings.mainNav?.length ? settings.mainNav : []
 ---
@@ -49,6 +50,7 @@ const nav = settings.mainNav?.length ? settings.mainNav : []
     <meta property="og:image" content={og} />
     <meta property="og:url" content={canonical} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={og} />
     <script is:inline>
       (function() {
         const t = localStorage.getItem('theme')

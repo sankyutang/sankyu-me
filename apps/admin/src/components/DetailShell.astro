@@ -16,6 +16,8 @@ interface Props {
   metaFields: MetaField[]
   toc?: TocItem[] | null
   hasRelated?: boolean
+  coverSrc?: string
+  coverAlt?: string
 }
 
 const {
@@ -27,6 +29,8 @@ const {
   metaFields,
   toc = null,
   hasRelated = false,
+  coverSrc,
+  coverAlt = '',
 } = Astro.props
 ---
 
@@ -38,6 +42,21 @@ const {
   >
     ← 返回 {backLabel}
   </a>
+
+  {coverSrc && (
+    <figure
+      class="reveal mb-10 overflow-hidden max-w-4xl"
+      style="border: 1px solid var(--ink-300); background: linear-gradient(135deg, var(--paper-200), var(--paper-300));"
+    >
+      <img
+        src={coverSrc}
+        alt={coverAlt}
+        class="block w-full object-cover"
+        style="aspect-ratio: 16 / 9; max-height: 440px;"
+        loading="eager"
+      />
+    </figure>
+  )}
 
   <header class="reveal mb-10 max-w-3xl">
     <div class="kicker mb-3">{kicker}</div>

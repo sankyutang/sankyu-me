@@ -2,7 +2,7 @@
 import PaperLayout from '@/layouts/PaperLayout.astro'
 import ProductsDetail from '@/components/react/ProductsDetail'
 import { getSiteSettings, getProduct, listProducts } from '@/lib/db/queries'
-import { adaptProduct } from '@/lib/adapt'
+import { adaptProduct, absoluteAssetUrl } from '@/lib/adapt'
 
 const env = Astro.locals.runtime.env
 const { slug } = Astro.params
@@ -14,8 +14,9 @@ if (!row) return new Response('Not found', { status: 404 })
 const product = adaptProduct(row, env.ASSET_BASE_URL)
 const all = (await listProducts(env.DB)).map((p) => adaptProduct(p, env.ASSET_BASE_URL))
 const others = all.filter((x) => x.id !== product.id).slice(0, 3)
+const ogImage = absoluteAssetUrl(env.SITE_BASE_URL, env.ASSET_BASE_URL, row.og_image, row.cover_image)
 ---
 
-<PaperLayout settings={settings} env={envProps} pathname={`/products/${slug}`} title={product.name_en} description={product.desc}>
+<PaperLayout settings={settings} env={envProps} pathname={`/products/${slug}`} title={product.name_en} description={product.desc} ogImage={ogImage}>
   <ProductsDetail product={product} others={others} />
 </PaperLayout>
