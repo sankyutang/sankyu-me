@@ -20,11 +20,38 @@ import type {
 
 const FALLBACK_COLOR = '#c8553d'
 
-function assetUrl(base: string | undefined, src: string | null): string | undefined {
+/**
+ * Legacy uploads used ASSET_BASE_URL=`…/assets` while storing R2 keys under
+ * `editor/…`, producing broken `/assets/editor/…` public URLs. Rewrite those
+ * to the working `/editor/…` path; leave other `/assets/…` keys alone.
+ */
+export function normalizePublicAssetUrl(url: string): string {
+  return url.replace(/^(https?:\/\/[^/?#]+)\/assets\/(editor\/)/i, '$1/$2')
+}
+
+export function assetUrl(base: string | undefined, src: string | null): string | undefined {
   if (!src) return undefined
-  if (/^https?:\/\//.test(src)) return src
-  if (!base) return src
-  return `${base.replace(/\/$/, '')}/${src.replace(/^\//, '')}`
+  if (/^https?:\/\//.test(src)) return normalizePublicAssetUrl(src)
+  const cleanedBase = (base || '').replace(/\/$/, '').replace(/\/assets$/i, '')
+  if (!cleanedBase) return normalizePublicAssetUrl(src.startsWith('/') ? src : `/${src}`)
+  return normalizePublicAssetUrl(`${cleanedBase}/${src.replace(/^\//, '')}`)
+}
+
+/** First usable absolute asset URL from cover/og candidates (for meta tags). */
+export function absoluteAssetUrl(
+  siteUrl: string | undefined,
+  assetBase: string | undefined,
+  ...candidates: Array<string | null | undefined>
+): string | undefined {
+  const origin = (siteUrl || assetBase || '').replace(/\/$/, '').replace(/\/assets$/i, '')
+  for (const candidate of candidates) {
+    const resolved = assetUrl(assetBase || siteUrl, candidate ?? null)
+    if (!resolved) continue
+    if (/^https?:\/\//.test(resolved)) return resolved
+    if (!origin) return resolved
+    return `${origin}${resolved.startsWith('/') ? resolved : `/${resolved}`}`
+  }
+  return undefined
 }
 
 export function platformLabel(p: string | undefined | null): string {

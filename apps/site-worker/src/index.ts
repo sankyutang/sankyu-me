@@ -43,15 +43,34 @@ function cacheFor(key: string): string {
   return 'public, max-age=60, s-maxage=3600'
 }
 
+/**
+ * Look up an R2 object, with a compatibility alias for legacy public URLs.
+ * Older admin uploads advertised `/assets/editor/…` while storing keys at
+ * `editor/…`. If `assets/…` misses, retry without the `assets/` prefix.
+ */
+async function getObject(bucket: R2Bucket, key: string): Promise<{ key: string; obj: R2ObjectBody } | null> {
+  const primary = await bucket.get(key)
+  if (primary) return { key, obj: primary }
+  if (key.startsWith('assets/')) {
+    const stripped = key.slice('assets/'.length)
+    if (stripped) {
+      const alt = await bucket.get(stripped)
+      if (alt) return { key: stripped, obj: alt }
+    }
+  }
+  return null
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       return new Response('method not allowed', { status: 405 })
     }
-    const key = resolveKey(url.pathname)
-    const obj = await env.SITE_BUCKET.get(key)
-    if (obj) {
+    const requestedKey = resolveKey(url.pathname)
+    const hit = await getObject(env.SITE_BUCKET, requestedKey)
+    if (hit) {
+      const { key, obj } = hit
       const headers = new Headers()
       headers.set('content-type', mimeFor(key, obj.httpMetadata?.contentType))
       headers.set('cache-control', obj.httpMetadata?.cacheControl ?? cacheFor(key))
