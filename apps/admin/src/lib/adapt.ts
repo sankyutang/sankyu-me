@@ -170,7 +170,7 @@ export function mediaFeed(podcasts: PodcastRowH[], videos: VideoRowH[]): MediaIt
 
 export function adaptProfile(s: SiteSettings): Profile {
   return {
-    name_zh: '唐三九',
+    name_zh: '三桥',
     name_en: 'Sankyu Tang',
     handle: 'sankyu',
     title_zh: '独立开发者 · 一人公司',
@@ -179,7 +179,7 @@ export function adaptProfile(s: SiteSettings): Profile {
     intro_en: '',
     now_zh: s.introBody || '',
     now_en: '',
-    location: 'Hangzhou, CN',
+    location: 'Guangzhou, CN',
     email: 'hi@sankyu.me',
     avatar_initial: 'S',
   }

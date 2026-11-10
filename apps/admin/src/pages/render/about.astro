@@ -11,23 +11,27 @@ const profile = adaptProfile(settings)
 const social = adaptSocial(settings)
 
 const timeline = [
-  { year: '2026', title: '做 SoloBoard,搬到杭州', desc: '把工作室搬进一间靠河的二楼,养了一只橘猫。' },
-  { year: '2025', title: '开始一人公司', desc: '上线 Letterbox,第一个真正盈利的产品。' },
-  { year: '2024', title: '离开大厂', desc: '在某大厂当了六年前端架构师,决定停下。' },
-  { year: '2019', title: '开始公开写作', desc: '在博客和知乎写第一篇关于前端构建的长文。' },
-  { year: '2014', title: '做第一份前端工作', desc: '第一行生产代码是一个 jQuery 轮播。' },
+  { year: '2024', title: '开始一人公司', desc: '现为 OPC 一人公司，独立开发者，FDE。' },
+  { year: '2021', title: '加入六一科技&欢乐童年', desc: '担任前端技术副总监，至 2023 年 11 月离职。' },
+  { year: '2019', title: '加入深圳初柒科技文化有限公司', desc: '担任前端主管，至 2021 年 2 月。' },
+  { year: '2015', title: '加入阿里巴巴', desc: '在 UC 事业群国际研发部任前端开发专家，至 2019 年 4 月。' },
+  { year: '2014', title: '出版《HTML5 移动开发指南》', desc: '一本前端著作。' },
+  { year: '2012', title: '加入优视科技', desc: '在 UC 浏览器中间件部任前端开发工程师，至 2015 年 1 月。' },
+  { year: '2011', title: '加入优乐无线&纵贯科技', desc: '任前端开发工程师，至 2012 年 4 月。' },
+  { year: '2008', title: '加入广东同望科技', desc: '在广州研发部任软件经理，至 2011 年 1 月。' },
+  { year: '2006', title: '就读华南师范大学', desc: '计算机科学与技术硕士，2008 年毕业。' },
 ]
 const meta = [
-  { k: '现居', v: '杭州 · Hangzhou' },
-  { k: '职业', v: '独立开发者 · 一人公司' },
-  { k: '前职', v: '大厂前端架构师 · 6 年' },
-  { k: '在做', v: 'SoloBoard / Letterbox / PaperDesk' },
+  { k: '现居', v: 'China, Guangzhou' },
+  { k: '职业', v: 'OPC一人公司，独立开发者，FDE' },
+  { k: '前职', v: '大厂前端P7 & 前端总监' },
+  { k: '在做', v: 'AI咨询、独立产品、FDE落地、一人公司课程' },
 ]
 const talk = [
-  { t: '一人公司 / 独立开发', d: '怎么开始、怎么定价、怎么活下去。' },
-  { t: '前端工程化', d: '构建工具、跨团队规范、性能优化。' },
-  { t: '中文写作 / 内容创作', d: '博客、邮件订阅、播客、视频。' },
-  { t: '桌面 / 工具', d: '我用什么、为什么不用某些东西。' },
+  { t: 'AI 咨询 / FDE 落地', d: '把大厂前端和工程经验，落到一人团队的 AI 编程工作流。' },
+  { t: '一人公司 / 独立产品', d: '从方向、定价到交付，怎么把产品做成一门生意。' },
+  { t: '前端团队与工程化', d: '技术选型、重构、跨团队协作，以及带前端团队。' },
+  { t: '一人公司课程', d: '面向想做独立开发或一人公司的同行，分享可复用的方法。' },
 ]
 ---
 
@@ -37,7 +41,7 @@ const talk = [
       <Avatar size={160} initial={profile.avatar_initial} />
       <div>
         <div class="kicker mb-2">关于 · ABOUT</div>
-        <h1 class="font-display text-[44px] md:text-[60px] leading-[0.98]" style="color: var(--ink-900);">你好,我是 <span style="color: var(--accent);">{profile.name_zh}</span>。</h1>
+        <h1 class="font-display text-[44px] md:text-[60px] leading-[0.98]" style="color: var(--ink-900);">你好, 我是 <span style="color: var(--accent);">{profile.name_zh}</span>。</h1>
         <p class="mt-2 italic text-[20px]" style="color: var(--ink-500); font-family: var(--font-serif-en);">Hi, I'm {profile.name_en}.</p>
         <p class="mt-5 text-[16px]" style="color: var(--ink-700); line-height: 1.8;">{profile.intro_zh}</p>
       </div>
@@ -82,7 +86,7 @@ const talk = [
     </section>
 
     <section class="reveal">
-      <h2 class="font-display text-[28px] md:text-[34px] mb-6" style="color: var(--ink-900);">在别处 <span class="italic ml-2 text-[18px]" style="color: var(--ink-500); font-family: var(--font-serif-en); font-weight: 400;">· Elsewhere</span></h2>
+      <h2 class="font-display text-[28px] md:text-[34px] mb-6" style="color: var(--ink-900);">常用平台 <span class="italic ml-2 text-[18px]" style="color: var(--ink-500); font-family: var(--font-serif-en); font-weight: 400;">· Platforms</span></h2>
       <div class="paper-card p-6"><SocialRow items={social} /></div>
     </section>
   </div>
