@@ -9,10 +9,10 @@ const env = Astro.locals.runtime.env
 const settings = await getSiteSettings(env.DB)
 const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
 const products = (await listProducts(env.DB)).map((p) => adaptProduct(p, env.ASSET_BASE_URL))
-const blurb =
-  products.length > 0
-    ? '一人公司在做的产品与工具。定价与状态以各条目为准。'
-    : '公开产品列表暂无已发布条目。当前在研独立产品包括 AI 番茄钟 PomoHut；公开链接、定价与上线状态待补充后再展示。'
+const hasPublished = products.length > 0
+const blurb = hasPublished
+  ? '一人公司在做的产品与工具。定价与状态以各条目为准。'
+  : '目前没有已发布的公开产品。以下是正在开发中的项目。'
 ---
 
 <PaperLayout
@@ -20,16 +20,16 @@ const blurb =
   env={envProps}
   pathname="/products"
   title="Products"
-  description="一人公司在做的产品与工具。不含未经证实的收入或占位产品。"
+  description="一人公司在做的产品与工具。"
 >
   <ListShell
     kicker="PRODUCTS · INDEPENDENT WORK"
     en="Products"
     blurb={blurb}
-    count={products.length}
+    count={hasPublished ? products.length : null}
     wide
   >
-    {products.length > 0 ? (
+    {hasPublished ? (
       <div>
         {products.map((p, i) => (
           <>
@@ -40,14 +40,12 @@ const blurb =
       </div>
     ) : (
       <div class="reveal max-w-2xl">
+        <div class="kicker mb-2">IN PROGRESS · 在研</div>
         <h2 class="font-display text-[28px] md:text-[34px] mb-3" style="color: var(--ink-900);">
           PomoHut
         </h2>
-        <p class="text-[15px] mb-4" style="color: var(--ink-700); line-height: 1.75;">
-          AI 番茄钟，开发中。此处不展示未证实的收入数字、虚构产品或猜测中的公开 URL / 定价。
-        </p>
-        <p class="text-[13px]" style="color: var(--ink-500); line-height: 1.7;">
-          待补充：产品公开地址、发布状态、可对外说明的定价或亮点。确认后可通过 Admin 产品条目发布到本页。
+        <p class="text-[15px]" style="color: var(--ink-700); line-height: 1.75;">
+          一款正在开发的 AI 番茄钟。
         </p>
       </div>
     )}
