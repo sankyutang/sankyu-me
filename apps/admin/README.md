@@ -68,6 +68,19 @@ Cache purge is best-effort — pipeline does not fail if these are absent.
 | `/api/site-settings`        | PUT: save + full republish       |
 | `/api/republish`            | POST: rebuild every page         |
 | `/api/uploads/r2`           | Multipart image upload to R2     |
+| `/render/rss.xml`           | Pure-string RSS 2.0 (not HTML)   |
+| `/render/sitemap.xml`       | Pure-string sitemap XML          |
+| `/render/robots.txt`        | Crawl policy + Sitemap line      |
+
+Full republish also uploads bundled site assets (`favicon.svg`, `favicon.ico`,
+`images/og-default.png`) to R2.
+
+### Subscribe persistence
+
+Public `POST /api/subscribe` lives on **site-worker** (same origin as the blog)
+and writes to D1 table `subscribers` (migration `0004_subscribers.sql`). Apply
+that migration on the shared `sankyume_admin` database before deploying the
+worker binding; until then the form reports “暂未开放” instead of faking success.
 
 ## Authentication
 

@@ -35,7 +35,13 @@ const talk = [
 ]
 ---
 
-<PaperLayout settings={settings} env={envProps} pathname="/about" title="About" description={profile.intro_zh}>
+<PaperLayout
+  settings={settings}
+  env={envProps}
+  pathname="/about"
+  title="About"
+  description={profile.intro_zh}
+>
   <div class="max-w-4xl mx-auto px-5 md:px-8 pt-12 md:pt-16 pb-16">
     <header class="reveal mb-12 md:mb-16 grid md:grid-cols-[180px_1fr] gap-8 md:gap-12 items-start">
       <Avatar size={160} initial={profile.avatar_initial} />

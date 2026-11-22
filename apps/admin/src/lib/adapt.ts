@@ -17,6 +17,7 @@ import type {
   Profile,
   SocialLink,
 } from './data-source/types'
+import { SITE_POSITIONING, firstNonEmpty } from './seo/defaults'
 
 const FALLBACK_COLOR = '#c8553d'
 
@@ -169,18 +170,24 @@ export function mediaFeed(podcasts: PodcastRowH[], videos: VideoRowH[]): MediaIt
 }
 
 export function adaptProfile(s: SiteSettings): Profile {
+  const intro = firstNonEmpty(
+    s.introBody,
+    s.siteDescription,
+    SITE_POSITIONING.intro
+  )
   return {
-    name_zh: '三桥',
-    name_en: 'Sankyu Tang',
+    name_zh: SITE_POSITIONING.nameZh,
+    name_en: SITE_POSITIONING.nameEn,
     handle: 'sankyu',
-    title_zh: '独立开发者 · 一人公司',
-    title_en: 'Indie Maker',
-    intro_zh: s.introBody || s.siteDescription || '',
+    title_zh: firstNonEmpty(s.introHeadline, SITE_POSITIONING.titleZh),
+    title_en: SITE_POSITIONING.titleEn,
+    intro_zh: intro,
     intro_en: '',
-    now_zh: s.introBody || '',
+    // No separate "now" field in site_settings yet — avoid duplicating intro in NowCard.
+    now_zh: '',
     now_en: '',
-    location: 'Guangzhou, CN',
-    email: 'hi@sankyu.me',
+    location: SITE_POSITIONING.location,
+    email: SITE_POSITIONING.email,
     avatar_initial: 'S',
   }
 }

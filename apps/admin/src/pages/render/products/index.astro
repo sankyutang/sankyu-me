@@ -9,30 +9,47 @@ const env = Astro.locals.runtime.env
 const settings = await getSiteSettings(env.DB)
 const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
 const products = (await listProducts(env.DB)).map((p) => adaptProduct(p, env.ASSET_BASE_URL))
-const stats = [
-  { label: '总 MRR', value: '$10,600', color: 'var(--accent)' },
-  { label: '商业产品', value: '3 件', color: 'var(--ink-800)' },
-  { label: '开源 · 已下线', value: '2 件', color: 'var(--accent-2)' },
-]
+const blurb =
+  products.length > 0
+    ? '一人公司在做的产品与工具。定价与状态以各条目为准。'
+    : '公开产品列表暂无已发布条目。当前在研独立产品包括 AI 番茄钟 PomoHut；公开链接、定价与上线状态待补充后再展示。'
 ---
 
-<PaperLayout settings={settings} env={envProps} pathname="/products" title="Products" description="一人公司养活自己的全部家底。">
-  <ListShell kicker="SHIPPED · WHAT THE SOLO CO. SELLS" en="Products" blurb="一人公司养活自己的全部家底:商业产品在跑、开源组件库、曾经的浏览器插件。所有定价都贴在桌面上,不打 enterprise tier。" count={products.length} wide>
-    <div class="mb-10 grid md:grid-cols-3 gap-4 text-[14px]">
-      {stats.map((s) => (
-        <div class="paper-card p-4 flex items-baseline justify-between">
-          <span class="kicker">{s.label}</span>
-          <span class="font-display text-[22px]" style={`color: ${s.color};`}>{s.value}</span>
-        </div>
-      ))}
-    </div>
-    <div>
-      {products.map((p, i) => (
-        <>
-          {i > 0 && <hr class="hand-divider my-2" />}
-          <ProductFeature product={p} index={i} total={products.length} />
-        </>
-      ))}
-    </div>
+<PaperLayout
+  settings={settings}
+  env={envProps}
+  pathname="/products"
+  title="Products"
+  description="一人公司在做的产品与工具。不含未经证实的收入或占位产品。"
+>
+  <ListShell
+    kicker="PRODUCTS · INDEPENDENT WORK"
+    en="Products"
+    blurb={blurb}
+    count={products.length}
+    wide
+  >
+    {products.length > 0 ? (
+      <div>
+        {products.map((p, i) => (
+          <>
+            {i > 0 && <hr class="hand-divider my-2" />}
+            <ProductFeature product={p} index={i} total={products.length} />
+          </>
+        ))}
+      </div>
+    ) : (
+      <div class="reveal max-w-2xl">
+        <h2 class="font-display text-[28px] md:text-[34px] mb-3" style="color: var(--ink-900);">
+          PomoHut
+        </h2>
+        <p class="text-[15px] mb-4" style="color: var(--ink-700); line-height: 1.75;">
+          AI 番茄钟，开发中。此处不展示未证实的收入数字、虚构产品或猜测中的公开 URL / 定价。
+        </p>
+        <p class="text-[13px]" style="color: var(--ink-500); line-height: 1.7;">
+          待补充：产品公开地址、发布状态、可对外说明的定价或亮点。确认后可通过 Admin 产品条目发布到本页。
+        </p>
+      </div>
+    )}
   </ListShell>
 </PaperLayout>
