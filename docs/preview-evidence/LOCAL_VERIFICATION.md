@@ -11,7 +11,7 @@ Date: 2026-11-22. Environment: local Wrangler / Astro only. No production D1/R2/
 ## Pages (same render path)
 
 - Home title: `三桥 · 一人公司 / 独立开发者 / FDE`; description non-empty; aligned with About positioning
-- Products: no `$10,600` / `3 件` fake stats; no “0 TOTAL” when listing in-progress work; PomoHut shown as a short natural in-progress blurb (no internal ops notes)
+- Products: no `$10,600` / `3 件` fake stats; no in-development product names; empty state is neutral「暂无公开产品。」
 - About: approved timeline/meta retained (三桥 / Guangzhou / OPC / FDE)
 - Footer subscribe: natural CTA + privacy (email only for operator-sent updates; no auto marketing); no invented deletion-request workflow
 

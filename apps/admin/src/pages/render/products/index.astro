@@ -10,9 +10,7 @@ const settings = await getSiteSettings(env.DB)
 const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
 const products = (await listProducts(env.DB)).map((p) => adaptProduct(p, env.ASSET_BASE_URL))
 const hasPublished = products.length > 0
-const blurb = hasPublished
-  ? '一人公司在做的产品与工具。定价与状态以各条目为准。'
-  : '目前没有已发布的公开产品。以下是正在开发中的项目。'
+const blurb = hasPublished ? '一人公司在做的产品与工具。定价与状态以各条目为准。' : undefined
 ---
 
 <PaperLayout
@@ -39,15 +37,9 @@ const blurb = hasPublished
         ))}
       </div>
     ) : (
-      <div class="reveal max-w-2xl">
-        <div class="kicker mb-2">IN PROGRESS · 在研</div>
-        <h2 class="font-display text-[28px] md:text-[34px] mb-3" style="color: var(--ink-900);">
-          PomoHut
-        </h2>
-        <p class="text-[15px]" style="color: var(--ink-700); line-height: 1.75;">
-          一款正在开发的 AI 番茄钟。
-        </p>
-      </div>
+      <p class="reveal text-[15px]" style="color: var(--ink-700); line-height: 1.75;">
+        暂无公开产品。
+      </p>
     )}
   </ListShell>
 </PaperLayout>
