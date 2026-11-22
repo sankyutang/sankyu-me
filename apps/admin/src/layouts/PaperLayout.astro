@@ -3,6 +3,7 @@ import '@/styles/paper.css'
 import { SocialRow } from '@/components/react/primitives'
 import { adaptProfile, adaptSocial } from '@/lib/adapt'
 import type { SiteSettings } from '@/lib/db/types'
+import { SITE_POSITIONING, firstNonEmpty } from '@/lib/seo/defaults'
 
 interface Props {
   settings: SiteSettings
@@ -29,8 +30,16 @@ const profile = adaptProfile(settings)
 const social = adaptSocial(settings)
 
 const siteName = settings.siteName || 'sankyu.me'
-const pageTitle = title ? `${title} · ${siteName}` : settings.defaultSeoTitle || siteName
-const desc = description || settings.defaultSeoDescription || settings.siteDescription || profile.intro_zh
+const pageTitle = title
+  ? `${title} · ${siteName}`
+  : firstNonEmpty(settings.defaultSeoTitle, SITE_POSITIONING.defaultSeoTitle, siteName)
+const desc = firstNonEmpty(
+  description,
+  settings.defaultSeoDescription,
+  settings.siteDescription,
+  profile.intro_zh,
+  SITE_POSITIONING.defaultSeoDescription
+)
 const siteUrl = (settings.siteUrl || env.siteUrl || 'https://sankyu.me').replace(/\/$/, '')
 const rawOg = ogImage || settings.defaultOgImage || `${siteUrl}/images/og-default.png`
 const og = /^https?:\/\//.test(rawOg) ? rawOg : `${siteUrl}${rawOg.startsWith('/') ? rawOg : `/${rawOg}`}`
@@ -58,6 +67,7 @@ const activeUnderline =
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -184,11 +194,28 @@ const activeUnderline =
           <div>
             <div class="kicker mb-3">订阅 · Subscribe</div>
             <p class="text-[13px] mb-3" style="color: var(--ink-700);">
-              每周日早上,一封《一人公司周记》。即将上线：一人公司社区、付费视频课,以及免费的《一人公司行动蓝皮书》文字版与社群。
+              留下邮箱，接收《一人公司周记》相关更新。
             </p>
-            <form id="subscribe-form" class="flex gap-2">
-              <input type="email" placeholder="your@email" class="flex-1 px-3 py-2 text-[13px]" style="background: var(--paper-50); border: 1px solid var(--ink-300); color: var(--ink-800); font-family: var(--font-body);" />
-              <button type="submit" class="px-3 py-2 text-[13px]" style="background: var(--accent); color: var(--paper-50); font-family: var(--font-body);">订阅</button>
+            <form id="subscribe-form" class="flex flex-col gap-2" novalidate>
+              <div class="flex gap-2">
+                <input
+                  id="subscribe-email"
+                  name="email"
+                  type="email"
+                  required
+                  autocomplete="email"
+                  placeholder="your@email"
+                  class="flex-1 px-3 py-2 text-[13px]"
+                  style="background: var(--paper-50); border: 1px solid var(--ink-300); color: var(--ink-800); font-family: var(--font-body);"
+                />
+                <button id="subscribe-submit" type="submit" class="px-3 py-2 text-[13px]" style="background: var(--accent); color: var(--paper-50); font-family: var(--font-body);">订阅</button>
+              </div>
+              <!-- honeypot: leave empty -->
+              <input type="text" name="website" id="subscribe-website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0;" />
+              <p id="subscribe-status" class="text-[12px]" style="color: var(--ink-500); min-height: 1.2em;" role="status" aria-live="polite"></p>
+              <p class="text-[11px]" style="color: var(--ink-500); line-height: 1.5;">
+                提交后，邮箱仅用于站长发送的更新通知，不会用于自动营销邮件。
+              </p>
             </form>
           </div>
         </div>
@@ -228,9 +255,59 @@ const activeUnderline =
         var t2 = document.getElementById('mobile-theme-toggle')
         if (t1) t1.addEventListener('click', toggle)
         if (t2) t2.addEventListener('click', toggle)
-        // subscribe (no-op)
+        // subscribe → POST /api/subscribe (site-worker / public origin)
         var sf = document.getElementById('subscribe-form')
-        if (sf) sf.addEventListener('submit', function (e) { e.preventDefault() })
+        if (sf) sf.addEventListener('submit', function (e) {
+          e.preventDefault()
+          var emailEl = document.getElementById('subscribe-email')
+          var websiteEl = document.getElementById('subscribe-website')
+          var statusEl = document.getElementById('subscribe-status')
+          var submitEl = document.getElementById('subscribe-submit')
+          var email = emailEl && 'value' in emailEl ? String(emailEl.value || '').trim() : ''
+          var website = websiteEl && 'value' in websiteEl ? String(websiteEl.value || '') : ''
+          function setStatus(msg, ok) {
+            if (!statusEl) return
+            statusEl.textContent = msg
+            statusEl.style.color = ok ? 'var(--accent-2, #3a6b46)' : 'var(--accent)'
+          }
+          if (!email) {
+            setStatus('请填写邮箱。', false)
+            return
+          }
+          if (submitEl) submitEl.setAttribute('disabled', 'disabled')
+          setStatus('提交中…', true)
+          fetch('/api/subscribe', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', accept: 'application/json' },
+            body: JSON.stringify({ email: email, website: website }),
+          })
+            .then(function (res) {
+              return res.json().then(function (data) {
+                return { res: res, data: data }
+              }).catch(function () {
+                return { res: res, data: {} }
+              })
+            })
+            .then(function (out) {
+              var data = out.data || {}
+              if (out.res.ok && (data.ok === true || data.status === 'duplicate')) {
+                setStatus(data.status === 'duplicate' ? '你已经订阅过了，无需重复提交。' : '已保存。感谢订阅。', true)
+                if (emailEl && 'value' in emailEl) emailEl.value = ''
+                return
+              }
+              var err = data.error || ''
+              if (err === 'invalid_email' || err === 'missing_email') setStatus('邮箱格式不正确，请重试。', false)
+              else if (out.res.status === 429) setStatus('提交过于频繁，请稍后再试。', false)
+              else if (out.res.status === 503 || err === 'unavailable') setStatus('订阅暂未开放，请稍后再试。', false)
+              else setStatus('保存失败，请稍后重试。', false)
+            })
+            .catch(function () {
+              setStatus('网络异常，请稍后重试。', false)
+            })
+            .finally(function () {
+              if (submitEl) submitEl.removeAttribute('disabled')
+            })
+        })
         // reveal
         function reveal() {
           document.body.classList.add('js-ready')

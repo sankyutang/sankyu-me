@@ -6,6 +6,18 @@ compatibility_date = "2025-01-01"
 binding = "SITE_BUCKET"
 bucket_name = "sankyume-site"
 
+# Same D1 as apps/admin — required for POST /api/subscribe persistence.
+# Do not apply migrations or deploy from this agent run; wait for operator approval.
+[[d1_databases]]
+binding = "DB"
+database_name = "sankyume_admin"
+database_id = "5d4765cd-fb35-4f66-9c21-2c25adc89769"
+migrations_dir = "../admin/migrations"
+
+# Optional: wrangler secret put SUBSCRIBE_IP_SECRET
+# [vars]
+# SUBSCRIBE_IP_SECRET is better as a secret; default exists in code for local only.
+
 # routes = [
 #   { pattern = "sankyu.me/*", custom_domain = true },
 # ]

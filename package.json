@@ -13,6 +13,10 @@
     "dev:worker": "npm run dev -w @sankyume/site-worker",
     "deploy:worker": "npm run deploy -w @sankyume/site-worker",
     "import-content": "tsx scripts/import-content.ts",
+    "test:feeds": "node --import tsx --test apps/admin/src/lib/feeds/xml.test.ts",
+    "test:subscribe": "node --import tsx --test apps/site-worker/src/subscribe.test.ts",
+    "test:unit": "npm run test:feeds && npm run test:subscribe",
+    "build": "astro build",
     "legacy:dev": "astro dev",
     "legacy:dev:mock": "PUBLIC_USE_MOCK=1 astro dev",
     "legacy:build": "astro build"

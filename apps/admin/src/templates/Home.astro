@@ -34,14 +34,20 @@ const featuredPages = [...topics, ...collections]
 const staticPages = allPages.filter((p) => !p.kind || p.kind === 'static')
 ---
 
-<PaperLayout settings={settings} env={env} pathname="/" isHome>
+<PaperLayout
+  settings={settings}
+  env={env}
+  pathname="/"
+  isHome
+  description={profile.intro_zh}
+>
   <div class="max-w-6xl mx-auto px-5 md:px-8 pt-10 md:pt-14 pb-20">
     <section class="reveal grid md:grid-cols-[auto_1fr] gap-7 md:gap-10 items-start">
       <div class="flex md:block items-center gap-4">
         <Avatar size={104} initial={profile.avatar_initial} />
         <div class="md:hidden">
           <div class="kicker">{profile.title_en}</div>
-          <h1 class="font-display text-[32px] leading-none mt-1" style="color: var(--ink-900);">{profile.name_en}</h1>
+          <h1 class="font-display text-[32px] leading-none mt-1" style="color: var(--ink-900);">{profile.name_zh}</h1>
         </div>
       </div>
       <div class="min-w-0">
@@ -50,8 +56,9 @@ const staticPages = allPages.filter((p) => !p.kind || p.kind === 'static')
           <span class="text-[12px] whitespace-nowrap" style="color: var(--ink-500); font-family: var(--font-mono);">{profile.location}</span>
         </div>
         <h1 class="hidden md:block font-display text-[72px] leading-[0.95] mt-1.5 tracking-tight" style="color: var(--ink-900);">
-          HI, I'm <span class="swoosh-underline" style="color: var(--accent);">{profile.name_en}</span>
+          你好, 我是 <span class="swoosh-underline" style="color: var(--accent);">{profile.name_zh}</span>
         </h1>
+        <p class="mt-2 italic text-[18px] hidden md:block" style="color: var(--ink-500); font-family: var(--font-serif-en);">Hi, I'm {profile.name_en}.</p>
         <p class="mt-4 md:mt-5 text-[16px] md:text-[17px] max-w-[58ch]" style="color: var(--ink-700); line-height: 1.75;">{profile.intro_zh}</p>
         {profile.intro_en && (
           <p class="mt-2 text-[13px] italic max-w-[58ch]" style="color: var(--ink-500); font-family: var(--font-serif-en);">{profile.intro_en}</p>

@@ -12,6 +12,7 @@ import type {
   Video,
   VideoRow,
 } from './types'
+import { SITE_POSITIONING } from '../seo/defaults'
 
 function parseJson<T>(value: string | null | undefined, fallback: T): T {
   if (!value) return fallback
@@ -138,15 +139,33 @@ const SITE_KEY = 'site'
 const DEFAULTS: SiteSettings = {
   siteName: 'sankyu.me',
   siteUrl: 'https://sankyu.me',
-  siteDescription: '',
-  defaultSeoTitle: 'sankyu.me',
-  defaultSeoDescription: '',
-  defaultOgImage: null,
+  siteDescription: SITE_POSITIONING.defaultSeoDescription,
+  defaultSeoTitle: SITE_POSITIONING.defaultSeoTitle,
+  defaultSeoDescription: SITE_POSITIONING.defaultSeoDescription,
+  defaultOgImage: '/images/og-default.png',
   mainNav: [],
   socialLinks: [],
-  introHeadline: '',
-  introBody: '',
+  introHeadline: SITE_POSITIONING.titleZh,
+  introBody: SITE_POSITIONING.intro,
   footerEmoji: '👋',
+}
+
+/** Merge DB JSON over defaults; blank strings fall back so empty admin saves don't blank SEO. */
+function mergeSettings(partial: Partial<SiteSettings>): SiteSettings {
+  const merged: SiteSettings = { ...DEFAULTS, ...partial }
+  const fill = <K extends keyof SiteSettings>(key: K, fallback: SiteSettings[K]) => {
+    const v = merged[key]
+    if (typeof v === 'string' && !v.trim()) {
+      merged[key] = fallback
+    }
+  }
+  fill('siteDescription', DEFAULTS.siteDescription)
+  fill('defaultSeoTitle', DEFAULTS.defaultSeoTitle)
+  fill('defaultSeoDescription', DEFAULTS.defaultSeoDescription)
+  fill('introBody', DEFAULTS.introBody)
+  fill('introHeadline', DEFAULTS.introHeadline)
+  if (!merged.defaultOgImage) merged.defaultOgImage = DEFAULTS.defaultOgImage
+  return merged
 }
 
 export async function getSiteSettings(db: D1Database): Promise<SiteSettings> {
@@ -156,7 +175,7 @@ export async function getSiteSettings(db: D1Database): Promise<SiteSettings> {
     .first<{ value: string }>()
   if (!row) return DEFAULTS
   try {
-    return { ...DEFAULTS, ...(JSON.parse(row.value) as Partial<SiteSettings>) }
+    return mergeSettings(JSON.parse(row.value) as Partial<SiteSettings>)
   } catch {
     return DEFAULTS
   }
