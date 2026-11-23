@@ -156,6 +156,29 @@ function formatShortDate(iso: string): string {
         </div>
       </section>
 
+      <section class="pt-6 border-t" style="border-color: var(--paper-300);">
+        <h3 class="m-0 mb-2 font-display font-bold text-[0.95rem]" style="color: var(--ink-900);">订阅更新</h3>
+        <p class="m-0 mb-3 text-[0.88rem]" style="color: var(--ink-500); line-height: 1.65;">
+          留下邮箱，接收一人公司相关更新。
+        </p>
+        <form data-subscribe class="subscribe-form flex flex-col gap-2" novalidate>
+          <div class="flex flex-col gap-2">
+            <input
+              name="email"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="your@email"
+              class="subscribe-input w-full px-3 py-2 text-[0.875rem]"
+              style="background: var(--paper-50); border: 1px solid var(--paper-300); color: var(--ink-800); border-radius: 999px;"
+            />
+            <button type="submit" class="btn-cta w-full">订阅</button>
+          </div>
+          <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0;" />
+          <p data-subscribe-status class="text-[0.78rem] m-0" style="color: var(--ink-300); min-height: 1.2em;" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
       {staticPages.length > 0 && (
         <section class="pt-6 border-t" style="border-color: var(--paper-300);">
           <h3 class="m-0 mb-3 font-display font-bold text-[0.95rem]" style="color: var(--ink-900);">页面</h3>

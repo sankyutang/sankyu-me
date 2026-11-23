@@ -16,6 +16,7 @@ function keyToRenderPath(key: string): string | null {
   if (key === '404.html') return '/render/notfound'
   if (key === 'sitemap.xml') return '/render/sitemap.xml'
   if (key === 'rss.xml') return '/render/rss.xml'
+  if (key === 'robots.txt') return '/render/robots.txt'
   if (key === 'about/index.html') return '/render/about'
 
   if (key === 'posts/index.html') return '/render/posts'
@@ -41,12 +42,20 @@ function keyToRenderPath(key: string): string | null {
   return null
 }
 
-function contentTypeForKey(key: string): string {
+function contentTypeForKey(key: string, responseType?: string | null): string {
+  // Prefer the renderer Content-Type when present (APIRoute XML/text responses).
+  if (responseType && !responseType.includes('text/html')) {
+    return responseType
+  }
+  if (key === 'robots.txt') return 'text/plain; charset=utf-8'
   if (key.endsWith('.xml')) {
     return key === 'rss.xml'
       ? 'application/rss+xml; charset=utf-8'
       : 'application/xml; charset=utf-8'
   }
+  if (key.endsWith('.svg')) return 'image/svg+xml'
+  if (key.endsWith('.png')) return 'image/png'
+  if (key.endsWith('.ico')) return 'image/x-icon'
   return 'text/html; charset=utf-8'
 }
 
@@ -71,5 +80,8 @@ export async function renderKey(
     throw new Error(`render ${path} -> ${res.status}: ${(await res.text()).slice(0, 200)}`)
   }
   const body = await res.text()
-  return { body, contentType: contentTypeForKey(key) }
+  return {
+    body,
+    contentType: contentTypeForKey(key, res.headers.get('content-type')),
+  }
 }

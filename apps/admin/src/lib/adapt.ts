@@ -17,6 +17,7 @@ import type {
   Profile,
   SocialLink,
 } from './data-source/types'
+import { SITE_POSITIONING, firstNonEmpty } from './seo/defaults'
 
 const FALLBACK_COLOR = '#2e6ceb'
 
@@ -178,20 +179,21 @@ const DEFAULT_SOCIAL: SocialLink[] = [
 ]
 
 export function adaptProfile(s: SiteSettings): Profile {
-  const intro = (s.introBody || s.siteDescription || '').trim() || DEFAULT_INTRO_ZH
+  // Keep approved About intro wording; do not substitute SEO marketing copy.
+  const intro = firstNonEmpty(s.introBody, s.siteDescription, DEFAULT_INTRO_ZH)
   return {
-    name_zh: '三桥',
-    name_en: 'Sankyu Tang',
+    name_zh: SITE_POSITIONING.nameZh,
+    name_en: SITE_POSITIONING.nameEn,
     handle: 'sankyu',
-    title_zh: '独立开发者 / FDE · OPC',
-    title_en: 'Indie Maker',
+    title_zh: firstNonEmpty(s.introHeadline, SITE_POSITIONING.titleZh),
+    title_en: SITE_POSITIONING.titleEn,
     intro_zh: intro,
     intro_en: '',
-    // Avoid duplicating intro in a NOW card.
+    // No separate "now" field in site_settings yet — avoid duplicating intro in NowCard.
     now_zh: '',
     now_en: '',
-    location: 'Guangzhou, CN',
-    email: 'hi@sankyu.me',
+    location: SITE_POSITIONING.location,
+    email: SITE_POSITIONING.email,
     avatar_initial: 'S',
   }
 }

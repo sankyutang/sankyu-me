@@ -3,6 +3,7 @@ import '@/styles/paper.css'
 import { SocialRow } from '@/components/react/primitives'
 import { adaptProfile, adaptSocial } from '@/lib/adapt'
 import type { SiteSettings } from '@/lib/db/types'
+import { SITE_POSITIONING, firstNonEmpty } from '@/lib/seo/defaults'
 
 interface Props {
   settings: SiteSettings
@@ -29,8 +30,16 @@ const profile = adaptProfile(settings)
 const social = adaptSocial(settings)
 
 const siteName = settings.siteName || 'sankyu.me'
-const pageTitle = title ? `${title} · ${siteName}` : settings.defaultSeoTitle || siteName
-const desc = description || settings.defaultSeoDescription || settings.siteDescription || profile.intro_zh
+const pageTitle = title
+  ? `${title} · ${siteName}`
+  : firstNonEmpty(settings.defaultSeoTitle, SITE_POSITIONING.defaultSeoTitle, siteName)
+const desc = firstNonEmpty(
+  description,
+  settings.defaultSeoDescription,
+  settings.siteDescription,
+  profile.intro_zh,
+  SITE_POSITIONING.defaultSeoDescription
+)
 const siteUrl = (settings.siteUrl || env.siteUrl || 'https://sankyu.me').replace(/\/$/, '')
 const rawOg = ogImage || settings.defaultOgImage || `${siteUrl}/images/og-default.png`
 const og = /^https?:\/\//.test(rawOg) ? rawOg : `${siteUrl}${rawOg.startsWith('/') ? rawOg : `/${rawOg}`}`
@@ -57,6 +66,7 @@ function isActive(href: string): boolean {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -155,7 +165,7 @@ function isActive(href: string): boolean {
 
     <footer class="mt-16 border-t" style="border-color: var(--paper-300);">
       <div class="max-w-[67.5rem] mx-auto px-5 md:px-8 py-10">
-        <div class="grid md:grid-cols-[1.4fr_1fr] gap-8 items-start">
+        <div class="grid md:grid-cols-[1.35fr_1fr_1fr] gap-8 items-start">
           <div>
             <div class="font-display font-bold text-[1.35rem]" style="color: var(--ink-900);">
               {profile.name_zh} · {siteName}
@@ -164,13 +174,42 @@ function isActive(href: string): boolean {
               {profile.intro_zh}
             </p>
             <p class="mt-2 text-[0.85rem]" style="color: var(--ink-300);">{profile.location}</p>
+            <div class="mt-4">
+              <a class="btn-cta" href="/about">了解合作</a>
+            </div>
           </div>
-          <div class="flex flex-col items-start gap-3">
-            {/* Subscribe form lands from PR #2 rebase — until then, real about/coop entry only */}
-            <a class="btn-cta" href="/about">了解合作</a>
+          <div>
+            <div class="kicker mb-3">常用平台</div>
             <div class="text-[0.88rem]" style="color: var(--ink-500);">
               <SocialRow items={social} />
             </div>
+          </div>
+          <div>
+            <div class="kicker mb-3">订阅更新</div>
+            <p class="text-[0.88rem] mb-3 m-0" style="color: var(--ink-500); line-height: 1.65;">
+              留下邮箱，接收一人公司相关更新。
+            </p>
+            <form id="subscribe-form" class="subscribe-form flex flex-col gap-2" novalidate>
+              <div class="flex gap-2">
+                <input
+                  id="subscribe-email"
+                  name="email"
+                  type="email"
+                  required
+                  autocomplete="email"
+                  placeholder="your@email"
+                  class="subscribe-input flex-1 min-w-0 px-3 py-2 text-[0.875rem]"
+                  style="background: var(--paper-50); border: 1px solid var(--paper-300); color: var(--ink-800); border-radius: 999px;"
+                />
+                <button id="subscribe-submit" type="submit" class="btn-cta shrink-0">订阅</button>
+              </div>
+              <!-- honeypot: leave empty -->
+              <input type="text" name="website" id="subscribe-website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0;" />
+              <p id="subscribe-status" class="text-[0.78rem] m-0" style="color: var(--ink-300); min-height: 1.2em;" role="status" aria-live="polite"></p>
+              <p class="text-[0.75rem] m-0" style="color: var(--ink-300); line-height: 1.5;">
+                邮箱仅用于站长发送的更新通知，不会自动营销。
+              </p>
+            </form>
           </div>
         </div>
         <hr class="hand-divider my-8" />
@@ -185,29 +224,89 @@ function isActive(href: string): boolean {
       ;(function () {
         var btn = document.getElementById('mobile-menu-btn')
         var menu = document.getElementById('mobile-menu')
-        if (!btn || !menu) return
-        function setOpen(open) {
-          menu.style.display = open ? 'block' : 'none'
-          if (open) menu.removeAttribute('hidden')
-          else menu.setAttribute('hidden', '')
-          btn.setAttribute('aria-expanded', open ? 'true' : 'false')
-          btn.setAttribute('aria-label', open ? '关闭菜单' : '打开菜单')
-        }
-        btn.addEventListener('click', function () {
-          setOpen(menu.style.display !== 'block')
-        })
-        btn.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
+        if (btn && menu) {
+          function setOpen(open) {
+            menu.style.display = open ? 'block' : 'none'
+            if (open) menu.removeAttribute('hidden')
+            else menu.setAttribute('hidden', '')
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false')
+            btn.setAttribute('aria-label', open ? '关闭菜单' : '打开菜单')
+          }
+          btn.addEventListener('click', function () {
             setOpen(menu.style.display !== 'block')
-          }
-        })
-        document.addEventListener('keydown', function (e) {
-          if (e.key === 'Escape' && menu.style.display === 'block') {
-            setOpen(false)
-            btn.focus()
-          }
-        })
+          })
+          btn.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              setOpen(menu.style.display !== 'block')
+            }
+          })
+          document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && menu.style.display === 'block') {
+              setOpen(false)
+              btn.focus()
+            }
+          })
+        }
+
+        // Real subscribe → POST /api/subscribe (site-worker on public origin). Status from API only.
+        function bindSubscribe(form) {
+          if (!form || form.getAttribute('data-bound') === '1') return
+          form.setAttribute('data-bound', '1')
+          form.addEventListener('submit', function (e) {
+            e.preventDefault()
+            var emailEl = form.querySelector('[name="email"]')
+            var websiteEl = form.querySelector('[name="website"]')
+            var statusEl = form.querySelector('[data-subscribe-status], #subscribe-status')
+            var submitEl = form.querySelector('[type="submit"]')
+            var email = emailEl && 'value' in emailEl ? String(emailEl.value || '').trim() : ''
+            var website = websiteEl && 'value' in websiteEl ? String(websiteEl.value || '') : ''
+            function setStatus(msg, ok) {
+              if (!statusEl) return
+              statusEl.textContent = msg
+              statusEl.style.color = ok ? '#3a6b46' : 'var(--accent)'
+            }
+            if (!email) {
+              setStatus('请填写邮箱。', false)
+              return
+            }
+            if (submitEl) submitEl.setAttribute('disabled', 'disabled')
+            setStatus('提交中…', true)
+            fetch('/api/subscribe', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json', accept: 'application/json' },
+              body: JSON.stringify({ email: email, website: website }),
+            })
+              .then(function (res) {
+                return res.json().then(function (data) {
+                  return { res: res, data: data }
+                }).catch(function () {
+                  return { res: res, data: {} }
+                })
+              })
+              .then(function (out) {
+                var data = out.data || {}
+                if (out.res.ok && (data.ok === true || data.status === 'duplicate')) {
+                  setStatus(data.status === 'duplicate' ? '你已经订阅过了，无需重复提交。' : '已保存。感谢订阅。', true)
+                  if (emailEl && 'value' in emailEl) emailEl.value = ''
+                  return
+                }
+                var err = data.error || ''
+                if (err === 'invalid_email' || err === 'missing_email') setStatus('邮箱格式不正确，请重试。', false)
+                else if (out.res.status === 429) setStatus('提交过于频繁，请稍后再试。', false)
+                else if (out.res.status === 503 || err === 'unavailable') setStatus('订阅暂未开放，请稍后再试。', false)
+                else setStatus('保存失败，请稍后重试。', false)
+              })
+              .catch(function () {
+                setStatus('网络异常，请稍后重试。', false)
+              })
+              .finally(function () {
+                if (submitEl) submitEl.removeAttribute('disabled')
+              })
+          })
+        }
+        bindSubscribe(document.getElementById('subscribe-form'))
+        document.querySelectorAll('form[data-subscribe]').forEach(bindSubscribe)
       })()
     </script>
   </body>

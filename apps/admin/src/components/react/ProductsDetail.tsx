@@ -8,14 +8,15 @@ export default function ProductsDetail({ product: p, others }: { product: Produc
   const statusColor =
     p.status === 'Live' ? '#3a6b46' : p.status === 'Beta' ? '#c8553d' : p.status === 'OSS' ? '#1e3a5f' : '#7d6a52'
 
-  const metrics: ProductMetric[] =
+  const metrics: ProductMetric[] = (
     p.metrics && p.metrics.length > 0
       ? p.metrics
       : ([
-          { label: 'MRR', value: p.mrr, highlight: true },
-          { label: 'PRICE', value: p.price },
+          p.mrr ? { label: 'MRR', value: p.mrr, highlight: true } : null,
+          p.price ? { label: 'PRICE', value: p.price } : null,
           p.users ? { label: 'USERS', value: p.users } : null,
         ].filter(Boolean) as ProductMetric[])
+  ).filter((m) => typeof m.value === 'string' && m.value.trim() !== '')
 
   return (
     <div className="max-w-6xl mx-auto px-5 md:px-8 pt-10 md:pt-14 pb-16">
