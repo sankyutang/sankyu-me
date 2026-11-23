@@ -1,7 +1,7 @@
 ---
 import PaperLayout from '@/layouts/PaperLayout.astro'
 import ListShell from '@/components/ListShell.astro'
-import { PostCardLarge, PostRow } from '@/components/react/cards'
+import { postHref } from '@/lib/links'
 import { getSiteSettings, listPosts } from '@/lib/db/queries'
 import { adaptPost } from '@/lib/adapt'
 
@@ -9,32 +9,60 @@ const env = Astro.locals.runtime.env
 const settings = await getSiteSettings(env.DB)
 const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
 const posts = (await listPosts(env.DB, { status: 'published' })).map((p) => adaptPost(p, env.ASSET_BASE_URL))
-const tags = ['全部', '一人公司', 'AI', '设计', '商业', '月报']
-const cards = posts.slice(0, 3)
-const rows = posts.slice(3)
+const tags = Array.from(new Set(posts.map((p) => (p.tag || '文章').trim()).filter(Boolean))).sort((a, b) =>
+  a.localeCompare(b, 'zh-CN')
+)
+
+function formatDate(iso: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso.slice(0, 10)
+  const y = d.getUTCFullYear()
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(d.getUTCDate()).padStart(2, '0')
+  return `${y}.${m}.${day}`
+}
 ---
 
 <PaperLayout settings={settings} env={envProps} pathname="/posts" title="Posts" description="写给一年后还会读到这页的自己。">
-  <ListShell kicker="WRITTEN · 一字一句" en="Posts" blurb="写给一年后还会读到这页的自己。中文为主，偶尔英文，不押韵。" count={posts.length}>
-    <div id="post-filters" class="flex flex-wrap items-center gap-2 mb-8">
+  <ListShell
+    kicker="Writing"
+    en="文章"
+    blurb="写给一年后还会读到这页的自己。中文为主，偶尔英文。"
+    count={posts.length}
+  >
+    <div class="flex flex-wrap items-center gap-1.5 mb-6" role="group" aria-label="按标签筛选">
+      <button type="button" class="filter-btn is-active post-chip" data-filter="全部" aria-pressed="true">全部</button>
       {tags.map((t) => (
-        <button data-filter={t} class="post-chip px-3 py-1 text-[13px]"
-          style={`font-family: var(--font-body); border: 1px solid ${t === '全部' ? 'var(--accent)' : 'var(--ink-300)'}; color: ${t === '全部' ? 'var(--accent)' : 'var(--ink-700)'}; background: ${t === '全部' ? 'rgba(200,85,61,0.06)' : 'transparent'}; border-radius: 2px;`}>
-          {t}
-        </button>
+        <button type="button" class="filter-btn post-chip" data-filter={t} aria-pressed="false">{t}</button>
       ))}
     </div>
 
-    <div class="grid md:grid-cols-3 gap-5 md:gap-6 mb-12">
-      {cards.map((p) => <div class="post-item h-full" data-tag={p.tag}><PostCardLarge post={p} /></div>)}
-    </div>
-
-    {rows.length > 0 && (
-      <>
-        <div class="kicker mb-3">归档 · ALL ESSAYS</div>
-        <div>{rows.map((p) => <div class="post-item" data-tag={p.tag}><PostRow post={p} /></div>)}</div>
-      </>
+    {posts.length === 0 ? (
+      <p style="color: var(--ink-500);">暂无已发布文章。</p>
+    ) : (
+      <ol class="list-none m-0 p-0 border-t" style="border-color: var(--paper-300);" id="posts-list">
+        {posts.map((p) => (
+          <li class="post-item py-5 border-b" style="border-color: var(--paper-300);" data-tag={p.tag || '文章'}>
+            <div class="grid sm:grid-cols-[6.5rem_minmax(0,1fr)] gap-2 sm:gap-5">
+              <time class="font-en text-[0.75rem] pt-1" style="color: var(--ink-300);" datetime={p.date}>
+                {formatDate(p.date)}
+              </time>
+              <div class="min-w-0">
+                <div class="text-[0.7rem] font-en font-medium mb-1.5" style="color: var(--accent-soft);">{p.tag || '文章'}</div>
+                <h2 class="m-0 font-display text-[1.15rem] md:text-[1.25rem] leading-[1.45]" style="overflow-wrap: anywhere;">
+                  <a href={postHref(p.id)} class="hover:text-[var(--accent-soft)]">{p.title_zh}</a>
+                </h2>
+                {p.excerpt && (
+                  <p class="mt-2 mb-0 text-[0.9rem]" style="color: var(--ink-500); line-height: 1.8;">{p.excerpt}</p>
+                )}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ol>
     )}
+    <p id="posts-filter-empty" class="py-8 text-[0.9rem]" style="color: var(--ink-500); display:none;" hidden>该标签下暂无文章。</p>
   </ListShell>
 </PaperLayout>
 
@@ -42,17 +70,30 @@ const rows = posts.slice(3)
   ;(function () {
     var chips = [].slice.call(document.querySelectorAll('.post-chip'))
     var items = [].slice.call(document.querySelectorAll('.post-item'))
+    var empty = document.getElementById('posts-filter-empty')
     function setActive(target) {
       chips.forEach(function (c) {
         var active = c.getAttribute('data-filter') === target
-        c.style.borderColor = active ? 'var(--accent)' : 'var(--ink-300)'
-        c.style.color = active ? 'var(--accent)' : 'var(--ink-700)'
-        c.style.background = active ? 'rgba(200,85,61,0.06)' : 'transparent'
+        c.classList.toggle('is-active', active)
+        c.setAttribute('aria-pressed', active ? 'true' : 'false')
       })
+      var n = 0
       items.forEach(function (it) {
-        it.style.display = target === '全部' || it.getAttribute('data-tag') === target ? '' : 'none'
+        var show = target === '全部' || it.getAttribute('data-tag') === target
+        it.style.display = show ? '' : 'none'
+        it.hidden = !show
+        if (show) n += 1
       })
+      if (empty) {
+        empty.style.display = n ? 'none' : 'block'
+        if (n) empty.setAttribute('hidden', '')
+        else empty.removeAttribute('hidden')
+      }
     }
-    chips.forEach(function (c) { c.addEventListener('click', function () { setActive(c.getAttribute('data-filter') || '全部') }) })
+    chips.forEach(function (c) {
+      c.addEventListener('click', function () {
+        setActive(c.getAttribute('data-filter') || '全部')
+      })
+    })
   })()
 </script>

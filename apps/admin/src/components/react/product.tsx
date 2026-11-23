@@ -254,14 +254,15 @@ export function ProductFeature({ product, index = 0, total }: { product: Product
   const number = String(index + 1).padStart(2, '0')
   const totalStr = total ? ' / ' + String(total).padStart(2, '0') : ''
 
-  const metrics: ProductMetric[] =
+  const metrics: ProductMetric[] = (
     product.metrics && product.metrics.length > 0
       ? product.metrics
       : ([
-          { label: 'MRR', value: product.mrr, highlight: true },
-          { label: 'PRICE', value: product.price },
+          product.mrr ? { label: 'MRR', value: product.mrr, highlight: true } : null,
+          product.price ? { label: 'PRICE', value: product.price } : null,
           product.users ? { label: 'USERS', value: product.users } : null,
         ].filter(Boolean) as ProductMetric[])
+  ).filter((m) => typeof m.value === 'string' && m.value.trim() !== '')
 
   return (
     <article className="reveal grid md:grid-cols-12 gap-8 md:gap-12 items-center py-12 md:py-16">
@@ -314,14 +315,16 @@ export function ProductFeature({ product, index = 0, total }: { product: Product
           </ul>
         )}
 
-        <div className="flex flex-wrap items-baseline gap-x-7 gap-y-3 mb-6 pb-5 border-b" style={{ borderColor: 'var(--ink-300)' }}>
-          {metrics.map((m) => (
-            <div key={m.label}>
-              <div className="kicker mb-1">{m.label}</div>
-              <div className="font-display" style={{ color: m.highlight ? product.color : 'var(--ink-800)', fontSize: 22, lineHeight: 1 }}>{m.value}</div>
-            </div>
-          ))}
-        </div>
+        {metrics.length > 0 && (
+          <div className="flex flex-wrap items-baseline gap-x-7 gap-y-3 mb-6 pb-5 border-b" style={{ borderColor: 'var(--paper-300)' }}>
+            {metrics.map((m) => (
+              <div key={m.label}>
+                <div className="kicker mb-1">{m.label}</div>
+                <div className="font-display" style={{ color: m.highlight ? product.color : 'var(--ink-800)', fontSize: 22, lineHeight: 1 }}>{m.value}</div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
           {product.url && product.url !== '#' ? (

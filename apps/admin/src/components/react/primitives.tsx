@@ -4,7 +4,7 @@ import { Icon } from './icons'
 import type { SocialLink } from '@/lib/data-source/types'
 
 /* ---------- COVER ---------- */
-const COVER_PALETTE = ['#c8553d', '#8b5e34', '#3a6b46', '#1e3a5f', '#a3823a', '#7a4f72']
+const COVER_PALETTE = ['#c41e1e', '#5a5a5a', '#3a6b46', '#1e3a5f', '#6b5a3a', '#5a4f72']
 function pickCoverColor(seed?: string) {
   let h = 0
   for (const c of String(seed || '?')) h = (h * 31 + c.charCodeAt(0)) >>> 0
@@ -38,12 +38,21 @@ export function Cover({
 
   if (src) {
     return (
-      <div className={'relative overflow-hidden ' + className} style={{ aspectRatio: aspect, ...style }}>
+      <div
+        className={'relative overflow-hidden ' + className}
+        style={{ aspectRatio: aspect, border: '1px solid var(--paper-300)', ...style }}
+      >
         <img src={src} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
         {kicker && (
           <span
             className="absolute top-2 left-2 px-1.5 py-0.5 text-[10px]"
-            style={{ background: 'rgba(245,241,232,0.92)', color: 'var(--ink-800)', fontFamily: 'var(--font-mono)', letterSpacing: '0.12em', textTransform: 'uppercase' }}
+            style={{
+              background: 'rgba(255,255,255,0.92)',
+              color: 'var(--ink-800)',
+              fontFamily: 'var(--font-en)',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+            }}
           >
             {kicker}
           </span>
@@ -57,19 +66,11 @@ export function Cover({
       className={'relative overflow-hidden ' + className}
       style={{
         aspectRatio: aspect,
-        background: `linear-gradient(135deg, ${c}26, ${c}10), var(--paper-200)`,
-        borderBottom: '1px solid var(--ink-300)',
+        background: 'var(--paper-200)',
+        border: '1px solid var(--paper-300)',
         ...style,
       }}
     >
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(58,42,29,0.13) 1px, transparent 1px)',
-          backgroundSize: compact ? '8px 8px' : '14px 14px',
-          opacity: 0.55,
-        }}
-      />
       {!compact && kicker && (
         <span className="absolute top-3 left-3 kicker" style={{ color: c, fontSize: 10 }}>
           {kicker}
@@ -78,46 +79,18 @@ export function Cover({
       <div className="absolute inset-0 flex items-center justify-center select-none">
         <span
           style={{
-            fontFamily: 'var(--font-serif-en)',
-            fontStyle: 'italic',
-            fontWeight: 500,
+            fontFamily: 'var(--font-en)',
+            fontStyle: 'normal',
+            fontWeight: 600,
             lineHeight: 1,
             color: c,
-            fontSize: compact ? '1.6em' : '5em',
-            opacity: 0.85,
-            textShadow: '0 1px 0 rgba(255,255,255,0.35)',
+            fontSize: compact ? '1.4em' : '3.5em',
+            opacity: 0.7,
           }}
         >
           {glyph}
         </span>
       </div>
-      {!compact && (
-        <div
-          className="absolute bottom-3 right-3 inline-flex items-center justify-center"
-          style={{
-            width: 28,
-            height: 28,
-            border: '1px solid ' + c,
-            color: c,
-            borderRadius: '50%',
-            fontSize: 10,
-            fontFamily: 'var(--font-serif-cn)',
-            transform: 'rotate(-6deg)',
-            background: 'rgba(245,241,232,0.5)',
-          }}
-        >
-          印
-        </div>
-      )}
-      {!compact && (
-        <div
-          className="absolute left-3 right-3 bottom-12 h-px"
-          style={{
-            backgroundImage: `linear-gradient(to right, ${c} 4px, transparent 4px)`,
-            backgroundSize: '10px 1px',
-          }}
-        />
-      )}
     </div>
   )
 }
@@ -128,10 +101,11 @@ interface AvatarProps {
   src?: string
   initial?: string
   className?: string
+  /** @deprecated stamps removed from editorial UI; ignored */
   noStamp?: boolean
 }
 
-export function Avatar({ size = 96, src, initial = 'S', className = '', noStamp = false }: AvatarProps) {
+export function Avatar({ size = 96, src, initial = 'S', className = '' }: AvatarProps) {
   return (
     <div className={'relative ' + className} style={{ width: size, height: size }} aria-hidden="true">
       <div
@@ -146,21 +120,6 @@ export function Avatar({ size = 96, src, initial = 'S', className = '', noStamp 
       >
         {src ? '' : initial}
       </div>
-      {!noStamp && (
-        <div
-          style={{
-            position: 'absolute',
-            right: -size * 0.18,
-            bottom: -size * 0.06,
-            width: size * 0.42,
-            height: size * 0.42,
-            zIndex: 1,
-          }}
-          className="stamp"
-        >
-          印
-        </div>
-      )}
     </div>
   )
 }
@@ -189,8 +148,8 @@ export function SocialRow({ items, compact = false, size = 36 }: SocialRowProps)
                 height: size,
                 color: 'var(--ink-700)',
                 background: 'var(--paper-50)',
-                border: '1px solid var(--ink-300)',
-                borderRadius: 999,
+                border: '1px solid var(--paper-300)',
+                borderRadius: 2,
               }}
             >
               {Glyph ? (

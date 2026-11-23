@@ -1,6 +1,6 @@
 ---
 import PaperLayout from '@/layouts/PaperLayout.astro'
-import { Avatar, SocialRow } from '@/components/react/primitives'
+import { SocialRow } from '@/components/react/primitives'
 import { getSiteSettings } from '@/lib/db/queries'
 import { adaptProfile, adaptSocial } from '@/lib/adapt'
 
@@ -36,58 +36,63 @@ const talk = [
 ---
 
 <PaperLayout settings={settings} env={envProps} pathname="/about" title="About" description={profile.intro_zh}>
-  <div class="max-w-4xl mx-auto px-5 md:px-8 pt-12 md:pt-16 pb-16">
-    <header class="reveal mb-12 md:mb-16 grid md:grid-cols-[180px_1fr] gap-8 md:gap-12 items-start">
-      <Avatar size={160} initial={profile.avatar_initial} />
-      <div>
-        <div class="kicker mb-2">关于 · ABOUT</div>
-        <h1 class="font-display text-[44px] md:text-[60px] leading-[0.98]" style="color: var(--ink-900);">你好, 我是 <span style="color: var(--accent);">{profile.name_zh}</span>。</h1>
-        <p class="mt-2 italic text-[20px]" style="color: var(--ink-500); font-family: var(--font-serif-en);">Hi, I'm {profile.name_en}.</p>
-        <p class="mt-5 text-[16px]" style="color: var(--ink-700); line-height: 1.8;">{profile.intro_zh}</p>
-      </div>
+  <div class="max-w-3xl mx-auto px-5 md:px-8 pt-12 md:pt-14 pb-16">
+    <header class="mb-10 md:mb-12">
+      <div class="kicker mb-2">About</div>
+      <h1 class="font-display text-[2.1rem] md:text-[2.6rem] leading-[1.15]" style="color: var(--ink-900); letter-spacing: 0.04em;">
+        你好，我是 {profile.name_zh}
+      </h1>
+      <p class="mt-2 font-en text-[1rem]" style="color: var(--ink-500);">Hi, I'm {profile.name_en}.</p>
+      <p class="mt-5 text-[1rem]" style="color: var(--ink-700); line-height: 1.85;">{profile.intro_zh}</p>
     </header>
 
-    <hr class="hand-divider mb-12" />
+    <hr class="hand-divider mb-10" />
 
-    <section class="reveal mb-14 grid md:grid-cols-4 gap-6 text-[14px]">
+    <section class="mb-12 grid sm:grid-cols-2 gap-x-8 gap-y-5 text-[0.9rem]">
       {meta.map((m) => (
         <div>
           <div class="kicker mb-1">{m.k}</div>
-          <div style="color: var(--ink-800);">{m.v}</div>
+          <div style="color: var(--ink-800); line-height: 1.6;">{m.v}</div>
         </div>
       ))}
     </section>
 
-    <section class="reveal mb-14">
-      <h2 class="font-display text-[28px] md:text-[34px] mb-6" style="color: var(--ink-900);">时间线 <span class="italic ml-2 text-[18px]" style="color: var(--ink-500); font-family: var(--font-serif-en); font-weight: 400;">· Timeline</span></h2>
-      <div class="grid gap-6 md:gap-4">
+    <section class="mb-12">
+      <h2 class="font-display text-[1.35rem] md:text-[1.5rem] mb-5" style="color: var(--ink-900);">
+        时间线 <span class="font-en text-[0.85rem] font-medium ml-2" style="color: var(--ink-500);">Timeline</span>
+      </h2>
+      <div class="grid gap-0">
         {timeline.map((t) => (
-          <div class="grid grid-cols-[80px_1fr] gap-5 pb-5 border-b" style="border-color: var(--ink-300);">
-            <div class="num-stamp text-[28px] leading-none">{t.year}</div>
-            <div>
-              <h4 class="font-display text-[18px]" style="color: var(--ink-900);">{t.title}</h4>
-              <p class="text-[14px] mt-1" style="color: var(--ink-700); line-height: 1.7;">{t.desc}</p>
+          <div class="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-4 py-4 border-b" style="border-color: var(--paper-300);">
+            <div class="num-stamp text-[1.15rem] pt-0.5">{t.year}</div>
+            <div class="min-w-0">
+              <h3 class="font-display text-[1.05rem] m-0" style="color: var(--ink-900);">{t.title}</h3>
+              <p class="text-[0.875rem] mt-1 mb-0" style="color: var(--ink-700); line-height: 1.7;">{t.desc}</p>
             </div>
           </div>
         ))}
       </div>
     </section>
 
-    <section class="reveal mb-14">
-      <h2 class="font-display text-[28px] md:text-[34px] mb-6" style="color: var(--ink-900);">能聊些什么 <span class="italic ml-2 text-[18px]" style="color: var(--ink-500); font-family: var(--font-serif-en); font-weight: 400;">· What I can talk about</span></h2>
-      <div class="grid md:grid-cols-2 gap-5">
+    <section class="mb-12">
+      <h2 class="font-display text-[1.35rem] md:text-[1.5rem] mb-5" style="color: var(--ink-900);">
+        能聊些什么 <span class="font-en text-[0.85rem] font-medium ml-2" style="color: var(--ink-500);">Topics</span>
+      </h2>
+      <div class="grid gap-4">
         {talk.map((x) => (
-          <div class="paper-card p-5">
-            <h4 class="font-display text-[18px] mb-1" style="color: var(--ink-900);">{x.t}</h4>
-            <p class="text-[14px]" style="color: var(--ink-700); line-height: 1.7;">{x.d}</p>
+          <div class="py-3 border-b" style="border-color: var(--paper-300);">
+            <h3 class="font-display text-[1.05rem] m-0 mb-1" style="color: var(--ink-900);">{x.t}</h3>
+            <p class="text-[0.875rem] m-0" style="color: var(--ink-700); line-height: 1.7;">{x.d}</p>
           </div>
         ))}
       </div>
     </section>
 
-    <section class="reveal">
-      <h2 class="font-display text-[28px] md:text-[34px] mb-6" style="color: var(--ink-900);">常用平台 <span class="italic ml-2 text-[18px]" style="color: var(--ink-500); font-family: var(--font-serif-en); font-weight: 400;">· Platforms</span></h2>
-      <div class="paper-card p-6"><SocialRow items={social} /></div>
+    <section>
+      <h2 class="font-display text-[1.35rem] md:text-[1.5rem] mb-5" style="color: var(--ink-900);">
+        常用平台 <span class="font-en text-[0.85rem] font-medium ml-2" style="color: var(--ink-500);">Platforms</span>
+      </h2>
+      <SocialRow items={social} />
     </section>
   </div>
 </PaperLayout>

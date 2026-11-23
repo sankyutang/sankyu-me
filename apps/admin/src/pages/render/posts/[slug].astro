@@ -1,7 +1,7 @@
 ---
 import PaperLayout from '@/layouts/PaperLayout.astro'
 import DetailShell from '@/components/DetailShell.astro'
-import { FauxBody, RelatedGrid } from '@/components/react/shells'
+import { RelatedGrid } from '@/components/react/shells'
 import { renderMarkdoc } from '@/lib/markdoc'
 import { getSiteSettings, getPost, listPosts, listProducts, listPodcasts, listVideos } from '@/lib/db/queries'
 import { adaptPost, adaptProduct, adaptPodcast, adaptVideo, absoluteAssetUrl } from '@/lib/adapt'
@@ -11,12 +11,31 @@ const env = Astro.locals.runtime.env
 const { slug } = Astro.params
 const settings = await getSiteSettings(env.DB)
 const envProps = { siteUrl: env.SITE_BASE_URL, assetBase: env.ASSET_BASE_URL }
+const siteUrl = (settings.siteUrl || env.SITE_BASE_URL || 'https://sankyu.me').replace(/\/$/, '')
 
 const row = await getPost(env.DB, slug!)
 if (!row) return new Response('Not found', { status: 404 })
 const post = adaptPost(row, env.ASSET_BASE_URL)
-const contentHtml = renderMarkdoc(row.content_markdoc)
+let contentHtml = renderMarkdoc(row.content_markdoc)
 const ogImage = absoluteAssetUrl(env.SITE_BASE_URL, env.ASSET_BASE_URL, row.og_image, row.cover_image)
+
+/** Promote first few real h2/h3 into TOC with stable ids (no fake 开场/中段/尾声). */
+const toc: { id: string; label: string }[] = []
+if (contentHtml) {
+  let i = 0
+  contentHtml = contentHtml.replace(/<h([23])(\s[^>]*)?>([\s\S]*?)<\/h\1>/gi, (_m, level, attrs = '', inner) => {
+    const label = String(inner)
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    if (!label) return `<h${level}${attrs || ''}>${inner}</h${level}>`
+    const existing = /id=["']([^"']+)["']/i.exec(attrs || '')
+    const id = existing?.[1] || `section-${++i}`
+    if (toc.length < 12) toc.push({ id, label: label.slice(0, 48) })
+    const cleanedAttrs = (attrs || '').replace(/\s*id=["'][^"']*["']/i, '')
+    return `<h${level}${cleanedAttrs} id="${id}">${inner}</h${level}>`
+  })
+}
 
 const [posts, products, podcasts, videos] = await Promise.all([
   listPosts(env.DB, { status: 'published' }),
@@ -25,38 +44,49 @@ const [posts, products, podcasts, videos] = await Promise.all([
   listVideos(env.DB, { status: 'published' }),
 ])
 const related = buildCrossRelated('posts', {
-  posts: posts.map((p) => adaptPost(p, env.ASSET_BASE_URL)),
+  posts: posts.map((p) => adaptPost(p, env.ASSET_BASE_URL)).filter((p) => p.id !== post.id),
   products: products.map((p) => adaptProduct(p, env.ASSET_BASE_URL)),
   podcasts: podcasts.map(adaptPodcast),
   videos: videos.map(adaptVideo),
 })
+
+function formatDate(iso: string): string {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso.slice(0, 10)
+  return d.toISOString().slice(0, 10)
+}
 ---
 
-<PaperLayout settings={settings} env={envProps} pathname={`/posts/${slug}`} title={post.title_zh} description={post.excerpt} ogImage={ogImage}>
+<PaperLayout
+  settings={settings}
+  env={envProps}
+  pathname={`/posts/${slug}`}
+  title={post.title_zh}
+  description={post.excerpt}
+  ogImage={ogImage}
+>
   <DetailShell
-    kicker={post.kicker + ' · ' + post.date}
+    kicker={(post.tag || '文章') + ' · ' + formatDate(post.date)}
     zh={post.title_zh}
-    en={post.title_en}
+    en={post.title_en || undefined}
     coverSrc={post.cover_src}
     coverAlt={post.title_zh}
     backHref="/posts"
     backLabel="文章列表"
+    shareUrl={`${siteUrl}/posts/${slug}`}
     metaFields={[
-      { label: 'DATE', value: post.date },
+      { label: 'DATE', value: formatDate(post.date) },
       { label: 'READING', value: post.reading || '—' },
-      { label: 'TAG', value: post.tag },
+      { label: 'TAG', value: post.tag || '文章' },
     ]}
-    toc={[
-      { id: 'h-1', label: '开场' },
-      { id: 'h-2', label: '中段' },
-      { id: 'h-3', label: '尾声' },
-    ]}
+    toc={toc.length ? toc : null}
     hasRelated={related.length > 0}
   >
     {contentHtml ? (
-      <div class="prose prose-stone max-w-none" set:html={contentHtml} />
+      <div class="prose-article" set:html={contentHtml} />
     ) : (
-      <FauxBody paragraphs={6} headings={['', '开场', '中段', '尾声', '', '结语']} />
+      <p style="color: var(--ink-500);">正文暂缺。</p>
     )}
     <RelatedGrid slot="related" items={related} />
   </DetailShell>
