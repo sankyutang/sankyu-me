@@ -1,0 +1,28 @@
+---
+import { SITE_AVATAR_ALT, SITE_AVATAR_PATH } from '@/lib/siteAvatar'
+
+interface Props {
+  /** CSS size, e.g. "2rem" or "32px" */
+  size: string
+  class?: string
+  /** Decorative only (default true for mark next to author name) */
+  decorative?: boolean
+}
+
+const { size, class: className = '', decorative = true } = Astro.props
+---
+
+<span
+  class:list={['site-avatar', className]}
+  style={`width: ${size}; height: ${size};`}
+  aria-hidden={decorative ? 'true' : undefined}
+>
+  <img
+    src={SITE_AVATAR_PATH}
+    alt={decorative ? '' : SITE_AVATAR_ALT}
+    width="80"
+    height="80"
+    loading="lazy"
+    decoding="async"
+  />
+</span>
