@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>方向 2 · 错位工场 — sankyu.me（提案）</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Space+Grotesk:wght@500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #e6f2ef;
+    --ink: #121212;
+    --teal: #0a6b62;
+    --coral: #e11d48;
+    --sun: #ffe566;
+    --ink2: #2a2a2a;
+    --line: #1a1a1a;
+    --font: "Noto Sans SC", "Space Grotesk", system-ui, sans-serif;
+    --play: "ZCOOL KuaiLe", "Noto Sans SC", cursive;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--font); font-size: 16px; line-height: 1.65; overflow-x: hidden;
+  }
+  a { color: inherit; }
+  a:focus-visible { outline: 3px solid var(--coral); outline-offset: 2px; }
+  .banner {
+    background: var(--ink); color: #fff; text-align: center;
+    font-size: 13px; font-weight: 700; padding: 0.45rem 1rem; letter-spacing: 0.04em;
+  }
+  .banner a { color: var(--sun); }
+
+  .frame {
+    width: min(1100px, calc(100% - 1.5rem));
+    margin: 0.85rem auto 2.5rem;
+    border: 3px solid var(--line);
+    background: #fffef9;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* playful blobs */
+  .blob {
+    position: absolute; border: 3px solid var(--line); z-index: 0; pointer-events: none;
+  }
+  .blob-a { width: 120px; height: 120px; background: var(--sun); border-radius: 50%;
+    top: 70px; right: 8%; transform: rotate(8deg); }
+  .blob-b { width: 90px; height: 160px; background: var(--coral);
+    top: 280px; left: -20px; transform: rotate(-12deg); border-radius: 40px; }
+  .blob-c { width: 70px; height: 70px; background: var(--teal);
+    bottom: 120px; right: 18%; transform: rotate(18deg); }
+
+  .topbar {
+    position: relative; z-index: 1;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.9rem 1.1rem; border-bottom: 3px solid var(--line); background: #fff;
+  }
+  .brand { font-weight: 900; font-size: 1.15rem; text-decoration: none; }
+  .brand span { color: var(--teal); }
+  .nav { display: flex; gap: 0.9rem; font-size: 0.85rem; font-weight: 700; }
+  .nav a { text-decoration: none; }
+  .nav a[aria-current="page"] { background: var(--sun); padding: 0.15rem 0.4rem; border: 2px solid var(--line); }
+
+  .hero {
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: 1.05fr 1fr; gap: 1rem;
+    padding: 1.5rem 1.1rem 1.75rem; border-bottom: 3px solid var(--line);
+    background: linear-gradient(180deg, #fff 0%, #fffef2 100%);
+  }
+  @media (max-width: 820px) { .hero { grid-template-columns: 1fr; } .blob-a { display: none; } }
+
+  .giant-wrap { position: relative; min-height: 220px; }
+  .giant {
+    position: relative; font-size: clamp(8rem, 28vw, 13rem); font-weight: 900;
+    line-height: 0.8; letter-spacing: -0.06em; user-select: none;
+  }
+  .giant .layer {
+    position: absolute; left: 0; top: 0;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  .giant .back {
+    background-image: repeating-linear-gradient(
+      0deg, var(--coral) 0 10px, transparent 10px 20px
+    );
+    transform: translate(6px, 5px);
+  }
+  .giant .front {
+    background-image: repeating-linear-gradient(
+      0deg, var(--teal) 0 10px, var(--ink) 10px 20px
+    );
+  }
+  .squiggle {
+    position: absolute; left: 8%; bottom: 8%; width: 70%; height: 40px;
+  }
+
+  .intro { position: relative; z-index: 2; padding-top: 0.5rem; }
+  .intro .play {
+    font-family: var(--play); font-size: 1.35rem; color: var(--coral); margin: 0 0 0.35rem;
+  }
+  .intro h1 {
+    margin: 0; font-size: clamp(2rem, 5vw, 2.85rem); font-weight: 900; line-height: 1.15;
+    letter-spacing: 0.04em;
+  }
+  .intro .en { margin-top: 0.35rem; font-family: "Space Grotesk", sans-serif; font-weight: 700; color: var(--ink2); }
+  .intro p { margin: 1rem 0 0; font-size: 1rem; line-height: 1.8; max-width: 32em; }
+  .chips { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .chips a, .chips span {
+    border: 2.5px solid var(--line); padding: 0.3rem 0.65rem; font-size: 0.8rem; font-weight: 700;
+    text-decoration: none; background: #fff;
+  }
+  .chips a:hover { background: var(--sun); }
+
+  .body {
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 0;
+  }
+  @media (max-width: 860px) { .body { grid-template-columns: 1fr; } }
+
+  .feed { padding: 1.25rem 1.1rem 1.75rem; border-right: 3px solid var(--line); }
+  @media (max-width: 860px) { .feed { border-right: 0; border-bottom: 3px solid var(--line); } }
+  .feed-head {
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem;
+    align-items: center; margin-bottom: 0.75rem;
+  }
+  .feed-head h2 {
+    margin: 0; font-size: 1.1rem; font-weight: 900;
+    background: #0f766e; color: #fff; display: inline-block;
+    padding: 0.25rem 0.55rem; border: 2.5px solid var(--line);
+  }
+  .filters { display: flex; gap: 0.35rem; }
+  .filters button {
+    border: 2.5px solid var(--line); background: #fff; font-weight: 800; font-size: 0.85rem;
+    padding: 0.35rem 0.6rem; cursor: pointer; font-family: inherit;
+  }
+  .filters button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+
+  .card {
+    border: 3px solid var(--line); padding: 1rem 1rem 1.05rem; margin: 0.85rem 0;
+    background: #fff; box-shadow: 5px 5px 0 var(--line);
+  }
+  .card[hidden] { display: none; }
+  .card.lead { background: #fff7e8; transform: rotate(-0.4deg); }
+  .card .when { font-size: 0.85rem; font-weight: 800; color: var(--ink2); font-family: "Space Grotesk", sans-serif; }
+  .card .tag {
+    display: inline-block; margin: 0.35rem 0 0.45rem; font-size: 0.8125rem; font-weight: 900;
+    background: var(--coral); color: #fff; padding: 0.2rem 0.45rem; border: 2px solid var(--line);
+  }
+  .card h3 { margin: 0; font-size: 1.15rem; line-height: 1.35; font-weight: 900; overflow-wrap: anywhere; }
+  .card h3 a { text-decoration: none; }
+  .card h3 a:hover { color: var(--teal); }
+  .card p { margin: 0.5rem 0 0; font-size: 0.92rem; line-height: 1.75; color: var(--ink2); }
+
+  .side { padding: 1.25rem 1.1rem 1.75rem; }
+  .shop {
+    border: 3px solid var(--line); background: var(--sun); padding: 1rem;
+    box-shadow: 6px 6px 0 var(--line); transform: rotate(1deg);
+  }
+  .shop h2 {
+    margin: 0 0 0.5rem; font-family: var(--play); font-size: 1.35rem; font-weight: 400;
+  }
+  .shop p { margin: 0; font-size: 0.9rem; line-height: 1.7; }
+  .shop ul { margin: 0.7rem 0 0; padding: 0; list-style: none; }
+  .shop li {
+    margin: 0.35rem 0; padding: 0.45rem 0.5rem; background: #fff;
+    border: 2px solid var(--line); font-size: 0.82rem; line-height: 1.45;
+  }
+  .shop li strong { display: block; }
+  .shop .cta {
+    display: block; margin-top: 0.85rem; text-align: center; text-decoration: none;
+    background: var(--ink); color: #fff; font-weight: 900; padding: 0.65rem;
+    border: 3px solid var(--line);
+  }
+  .shop .cta:hover { background: var(--teal); }
+  .else {
+    margin-top: 1.1rem; border: 3px solid var(--line); padding: 0.9rem; background: #fff;
+  }
+  .else h2 { margin: 0 0 0.45rem; font-size: 0.85rem; font-weight: 900; }
+  .else a { display: block; font-weight: 700; font-size: 0.85rem; margin: 0.25rem 0; color: var(--teal); }
+
+  .foot {
+    position: relative; z-index: 1;
+    border-top: 3px solid var(--line); padding: 0.75rem 1.1rem;
+    display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;
+    font-size: 0.85rem; font-weight: 700; background: #fff;
+  }
+</style>
+</head>
+<body>
+  <div class="banner">提案 DIR-2 · 错位工场 · 仅预览 · <a href="./index.html">三方向比较</a></div>
+  <div class="frame">
+    <div class="blob blob-a" aria-hidden="true"></div>
+    <div class="blob blob-b" aria-hidden="true"></div>
+    <div class="blob blob-c" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="brand" href="https://sankyu.me/">sankyu<span>.</span>me</a>
+      <nav class="nav" aria-label="主导航">
+        <a href="#feed" aria-current="page">文章</a>
+        <a href="https://sankyu.me/about">关于</a>
+        <a href="https://sankyu.me/products">产品</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="giant-wrap" aria-hidden="true">
+        <div class="giant">
+          <span class="layer back">桥</span>
+          <span class="layer front">桥</span>
+        </div>
+        <svg class="squiggle" viewBox="0 0 300 40" fill="none" aria-hidden="true">
+          <path d="M4 22 C 40 2, 70 38, 110 18 S 180 4, 220 24 S 270 36, 296 12" stroke="#121212" stroke-width="6" stroke-linecap="round"/>
+          <path d="M4 26 C 40 6, 70 42, 110 22 S 180 8, 220 28 S 270 40, 296 16" stroke="#0d9488" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="intro">
+        <p class="play">一人公司 · 现场感</p>
+        <h1>三桥</h1>
+        <div class="en">Sankyu Tang</div>
+        <p>广州。2024 年起做一人公司：独立开发与 FDE，也写 AI 实践与生活。前大厂前端。套印会偏一点——文章这边要对齐。</p>
+        <div class="chips">
+          <span>Guangzhou, CN</span>
+          <a href="https://x.com/imsankyu" target="_blank" rel="noopener">X</a>
+          <a href="https://github.com/sankyutang" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="body">
+      <main class="feed" id="feed">
+        <div class="feed-head">
+          <h2>文章现场</h2>
+          <div class="filters" role="group" aria-label="筛选">
+            <button type="button" data-f="all" aria-pressed="true">全部</button>
+            <button type="button" data-f="AI" aria-pressed="false">AI</button>
+            <button type="button" data-f="文章" aria-pressed="false">文章</button>
+          </div>
+        </div>
+        <svg viewBox="0 0 420 48" width="100%" height="48" aria-hidden="true" style="margin:0.25rem 0 0.5rem;display:block;">
+          <rect x="2" y="10" width="80" height="28" fill="#ffe566" stroke="#1a1a1a" stroke-width="3"/>
+          <rect x="70" y="6" width="90" height="28" fill="#e11d48" stroke="#1a1a1a" stroke-width="3" transform="rotate(2 115 20)"/>
+          <rect x="150" y="12" width="100" height="28" fill="#0f766e" stroke="#1a1a1a" stroke-width="3"/>
+          <text x="175" y="32" font-size="12" font-weight="800" fill="#fff" font-family="Noto Sans SC,sans-serif">2013→2026</text>
+        </svg>
+
+        <article class="card lead" data-tag="AI">
+          <div class="when">2026.11.09</div>
+          <span class="tag">AI</span>
+          <h3><a href="https://sankyu.me/posts/ai-coding-week-48-prompts/">一个人加一个 AI 编程助手，一周做了什么：48 条指令的复盘</a></h3>
+          <p>我用 AI 编程助手推进一款棋类学习 App 的一周复盘，讲六个可复用的做法：让 AI 先问清楚、把规则写进文档、用脚本防止漏改、看真实运行结果、给 AI 的错误设防线、管理上下文。</p>
+        </article>
+        <article class="card" data-tag="文章">
+          <div class="when">2026.08.20</div>
+          <span class="tag">文章</span>
+          <h3><a href="https://sankyu.me/posts/travel-in-qiaodao-ai-aa-4205/">在珠海淇澳岛，11个人把一笔4205元的账交给了AI</a></h3>
+          <p>一次珠海淇澳岛的大学同学小聚，11个人把4205元的复杂AA账交给AI计算。账目算清了，关系更轻松，也让我意识到：AI不只服务于工作，也能帮我们处理生活里的琐碎。</p>
+        </article>
+        <article class="card" data-tag="文章">
+          <div class="when">2013.02.02</div>
+          <span class="tag">文章</span>
+          <h3><a href="https://sankyu.me/posts/travel-in-Hokkaido-japan/">[多图游记]冬天北海道这么大，我们偏要走这里</a></h3>
+          <p>我们从广州飞去东京的途中，在空中遇到日本富士山。包括空姐都一起观望远处的富士山山顶。</p>
+        </article>
+        <p style="margin:1rem 0 0;font-weight:800;font-size:0.9rem;"><a href="https://sankyu.me/posts/">全部文章</a></p>
+      </main>
+
+      <aside class="side">
+        <section class="shop">
+          <h2>合作窗口</h2>
+          <p>AI 咨询、FDE、一人公司、前端工程化——先看关于页，不硬推。</p>
+          <ul>
+            <li><strong>AI / FDE</strong>把工程经验落到小团队工作流</li>
+            <li><strong>一人公司</strong>方向、交付与产品生意</li>
+            <li><strong>前端</strong>选型、重构与带队</li>
+          </ul>
+          <a class="cta" href="https://sankyu.me/about">走进关于页</a>
+        </section>
+        <section class="else">
+          <h2>Elsewhere</h2>
+          <a href="https://x.com/imsankyu" target="_blank" rel="noopener">X · @imsankyu</a>
+          <a href="https://github.com/sankyutang" target="_blank" rel="noopener">GitHub · sankyutang</a>
+        </section>
+      </aside>
+    </div>
+
+    <footer class="foot">
+      <span>© Sankyu Tang · DIR-2</span>
+      <span>Not live · visual draft</span>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      var btns = [].slice.call(document.querySelectorAll('.filters button'));
+      var cards = [].slice.call(document.querySelectorAll('.card[data-tag]'));
+      btns.forEach(function (b) {
+        b.addEventListener('click', function () {
+          var f = b.getAttribute('data-f');
+          btns.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+          cards.forEach(function (c) {
+            c.hidden = !(f === 'all' || c.getAttribute('data-tag') === f);
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

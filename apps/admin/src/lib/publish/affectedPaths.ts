@@ -39,6 +39,7 @@ export function planPaths(
 
   render.add('sitemap.xml')
   render.add('rss.xml')
+  render.add('robots.txt')
 
   void ctx
   return { render: [...render], remove: [...remove] }
@@ -88,6 +89,7 @@ export function planFullSite(slugs: {
     'about/index.html',
     'sitemap.xml',
     'rss.xml',
+    'robots.txt',
     '404.html',
     'posts/index.html',
     'products/index.html',

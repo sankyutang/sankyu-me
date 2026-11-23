@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>huashu-redesign · 三方向比较 — sankyu.me（提案）</title>
+<meta name="robots" content="noindex" />
+<style>
+  :root {
+    --bg: #111; --fg: #f2f2f0; --mute: #9a9a96; --line: #2a2a28;
+    --a: #00a33e; --b: #0d9488; --c: #c9a227;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: "IBM Plex Sans", "Noto Sans SC", system-ui, sans-serif;
+    font-size: 15px; line-height: 1.55;
+  }
+  a { color: inherit; }
+  .banner {
+    background: #000; color: #cfc; text-align: center; font-size: 12px;
+    padding: 0.5rem 1rem; letter-spacing: 0.04em;
+  }
+  .wrap { width: min(1180px, calc(100% - 2rem)); margin: 0 auto; padding: 1.5rem 0 3rem; }
+  h1 { margin: 0 0 0.35rem; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; letter-spacing: -0.02em; }
+  .lead { color: var(--mute); max-width: 46em; margin: 0 0 1.5rem; }
+  .note {
+    border: 1px solid var(--line); padding: 0.85rem 1rem; margin-bottom: 1.75rem;
+    font-size: 0.88rem; color: var(--mute); background: #181816;
+  }
+  .note strong { color: var(--fg); }
+  .grid {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem;
+  }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    border: 1px solid var(--line); background: #161614; display: flex; flex-direction: column;
+  }
+  .card header {
+    padding: 0.9rem 1rem 0.75rem; border-bottom: 1px solid var(--line);
+  }
+  .card .tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em;
+    padding: 0.15rem 0.4rem; margin-bottom: 0.45rem;
+  }
+  .d1 .tag { background: var(--a); color: #000; }
+  .d2 .tag { background: var(--b); color: #fff; }
+  .d3 .tag { background: var(--c); color: #111; }
+  .card h2 { margin: 0; font-size: 1.15rem; font-weight: 800; }
+  .card .sub { margin: 0.35rem 0 0; font-size: 0.8rem; color: var(--mute); }
+  .card .body { padding: 0.9rem 1rem 1rem; flex: 1; font-size: 0.88rem; color: #c8c8c4; }
+  .card ul { margin: 0.5rem 0 0; padding-left: 1.1rem; }
+  .card li { margin: 0.25rem 0; }
+  .card footer {
+    padding: 0.85rem 1rem; border-top: 1px solid var(--line);
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+  }
+  .card a.btn {
+    text-decoration: none; font-weight: 700; font-size: 0.82rem;
+    padding: 0.45rem 0.7rem; border: 1px solid var(--line); background: #222;
+  }
+  .card a.btn:hover { background: #2c2c2a; }
+  .d1 a.btn.primary { background: var(--a); color: #000; border-color: var(--a); }
+  .d2 a.btn.primary { background: var(--b); color: #fff; border-color: var(--b); }
+  .d3 a.btn.primary { background: var(--c); color: #111; border-color: var(--c); }
+  .why {
+    margin-top: 2rem; border-top: 1px solid var(--line); padding-top: 1.25rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
+  }
+  @media (max-width: 700px) { .why { grid-template-columns: 1fr; } }
+  .why h3 { margin: 0 0 0.4rem; font-size: 0.95rem; }
+  .why p { margin: 0; color: var(--mute); font-size: 0.88rem; }
+  .foot { margin-top: 2rem; font-size: 0.75rem; color: #666; }
+</style>
+</head>
+<body>
+  <div class="banner">设计说明页 · 非博客正文 · 请选一个方向后再进入正式实施</div>
+  <div class="wrap">
+    <h1>三桥 · 三方向视觉提案</h1>
+    <p class="lead">基于 huashu-design v3.5.0 窄桥流程：六候选 → 三真实差异骨架。目标不变——阅读优先 + 克制的咨询合作入口。本页只做方向对比，不混入站点文案。</p>
+    <div class="note">
+      <strong>请选一版。</strong> DIR-1 指令报章 · DIR-2 错位工场 · DIR-3 珠江夜志。
+      截图见 artifacts；本目录仅预览，不部署、不改生产模板。
+    </div>
+
+    <div class="grid">
+      <article class="card d1">
+        <header>
+          <span class="tag">DIR-1</span>
+          <h2>指令报章</h2>
+          <p class="sub">Brutal / phosphor / 工程报头</p>
+        </header>
+        <div class="body">
+          黑白纸面 + 信号绿与警示红，报章式分栏。像工程师的日报：姓名即报头，文章是主栏，合作是侧栏短讯。
+          <ul>
+            <li>骨架：报章分栏 + 波浪 SVG</li>
+            <li>气质：冷静、可扫读、工程感</li>
+            <li>适合：AI 实践长文为主的读者</li>
+          </ul>
+        </div>
+        <footer>
+          <a class="btn primary" href="./dir-1.html">打开首页</a>
+        </footer>
+      </article>
+
+      <article class="card d2">
+        <header>
+          <span class="tag">DIR-2</span>
+          <h2>错位工场</h2>
+          <p class="sub">Hattori / 套印偏移 / 现场感</p>
+        </header>
+        <div class="body">
+          暖纸底 + 青绿 / 珊瑚 / 阳光黄，大字「桥」双色套印错位。一人公司的工场感：文章像现场卡片，合作是侧边窗口。
+          <ul>
+            <li>骨架：巨字图腾 + 粗边卡片</li>
+            <li>气质：有戏、手作、可互动筛选</li>
+            <li>适合：想表达「人」与现场温度</li>
+          </ul>
+        </div>
+        <footer>
+          <a class="btn primary" href="./dir-2.html">打开首页</a>
+        </footer>
+      </article>
+
+      <article class="card d3">
+        <header>
+          <span class="tag">DIR-3</span>
+          <h2>珠江夜志</h2>
+          <p class="sub">Deco night / 金玉夜色</p>
+        </header>
+        <div class="body">
+          深夜蓝底 + 金与玉色，衬线中文报头。广州珠江意象用 SVG 河线与楼影，夜读杂志感；咨询入口为克制金边面板。
+          <ul>
+            <li>骨架：夜志双栏 + 装饰面板</li>
+            <li>气质：沉静、地域、长文友好</li>
+            <li>适合：强调广州与独立书写身份</li>
+          </ul>
+        </div>
+        <footer>
+          <a class="btn primary" href="./dir-3.html">打开首页</a>
+        </footer>
+      </article>
+    </div>
+
+    <div class="why">
+      <div>
+        <h3>共同约束（已落实）</h3>
+        <p>三桥 / Sankyu Tang · 广州 · 2024 一人公司 · 三篇真实文章 · X/GitHub 真链 · 无 PomoHut · 无假表单 · 合作链到 /about。</p>
+      </div>
+      <div>
+        <h3>刻意避开</h3>
+        <p>暖白朱红纯文本极简 · 米黄纸纹印章手账 · 机械 Bento SaaS · 紫蓝渐变。三方向骨架与色板互不换皮。</p>
+      </div>
+    </div>
+    <p class="foot">huashu-design · design-demos/huashu-redesign · PR 审阅用，未合并</p>
+  </div>
+</body>
+</html>

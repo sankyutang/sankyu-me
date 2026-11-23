@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>提案 B · 编辑式双栏 — sankyu.me</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="description" content="设计提案 B：编辑式首页，桌面双栏 + 侧边合作入口（仅预览，未上线）" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-soft: #f7f6f4;
+      --ink: #171717;
+      --ink-2: #333333;
+      --ink-3: #666666;
+      --ink-4: #999999;
+      --line: #e3e1dd;
+      --line-soft: #eeebe7;
+      --accent: #c41e1e;
+      --accent-ink: #9e1818;
+      --rail: 15.5rem;
+      --pad: clamp(1.25rem, 3.5vw, 2.25rem);
+      --font-zh: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --font-en: "Source Sans 3", "Noto Sans SC", system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-zh);
+      font-size: 16px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .banner {
+      background: #2a2a2a;
+      color: #f5f5f5;
+      font-family: var(--font-en);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-align: center;
+      padding: 0.45rem var(--pad);
+    }
+    .banner a { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
+
+    .shell {
+      width: min(100%, 68rem);
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    /* ——— Masthead ——— */
+    .masthead {
+      padding: 1.6rem 0 0;
+    }
+    .masthead-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 1.1rem;
+    }
+    .brand {
+      font-family: var(--font-en);
+      font-weight: 700;
+      font-size: 1.125rem;
+      letter-spacing: -0.03em;
+    }
+    .brand em {
+      font-style: normal;
+      color: var(--accent);
+    }
+    .nav-links {
+      display: flex;
+      gap: 1.35rem;
+      font-size: 0.875rem;
+      color: var(--ink-3);
+    }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-links a.is-active {
+      color: var(--ink);
+      font-weight: 500;
+      box-shadow: inset 0 -2px 0 var(--accent);
+      padding-bottom: 0.15rem;
+    }
+
+    .masthead-rule {
+      border: 0;
+      border-top: 2px solid var(--ink);
+      margin: 0;
+    }
+    .masthead-rule-thin {
+      border: 0;
+      border-top: 1px solid var(--line);
+      margin: 0.35rem 0 0;
+    }
+
+    .masthead-body {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      padding: 1.75rem 0 1.5rem;
+    }
+    @media (min-width: 860px) {
+      .masthead-body {
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        gap: 2rem;
+      }
+    }
+
+    .identity h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 5vw, 2.85rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      line-height: 1.1;
+    }
+    .identity .en {
+      margin-top: 0.4rem;
+      font-family: var(--font-en);
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--ink-3);
+      letter-spacing: 0.02em;
+    }
+    .identity .lead {
+      margin: 1rem 0 0;
+      max-width: 36em;
+      font-size: 1rem;
+      line-height: 1.85;
+      color: var(--ink-2);
+    }
+
+    .desk-meta {
+      font-family: var(--font-en);
+      font-size: 0.8125rem;
+      color: var(--ink-3);
+      text-align: left;
+      line-height: 1.7;
+    }
+    @media (min-width: 860px) {
+      .desk-meta { text-align: right; }
+    }
+    .desk-meta strong {
+      display: block;
+      color: var(--ink);
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+
+    /* ——— Layout ——— */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+      padding: 0.5rem 0 0;
+    }
+    @media (min-width: 900px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr) var(--rail);
+        gap: 3rem;
+        align-items: start;
+      }
+    }
+
+    /* ——— Filter (meaningful) ——— */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem 1rem;
+      margin-bottom: 0.35rem;
+    }
+    .section-kicker {
+      margin: 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-family: var(--font-en);
+      color: var(--ink-3);
+    }
+    .filters {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--ink-3);
+      font-family: inherit;
+      font-size: 0.75rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .filter-btn:hover {
+      color: var(--ink);
+      border-color: var(--ink-4);
+    }
+    .filter-btn[aria-pressed="true"] {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: #fff;
+    }
+
+    /* ——— Posts ——— */
+    .posts {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border-top: 1px solid var(--line);
+    }
+    .post {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.35rem 1.5rem;
+      padding: 1.55rem 0;
+      border-bottom: 1px solid var(--line-soft);
+    }
+    @media (min-width: 640px) {
+      .post {
+        grid-template-columns: 6.5rem minmax(0, 1fr);
+        align-items: start;
+      }
+    }
+    .post[hidden] { display: none; }
+
+    .post-date {
+      font-family: var(--font-en);
+      font-size: 0.75rem;
+      color: var(--ink-4);
+      padding-top: 0.35rem;
+      letter-spacing: 0.02em;
+    }
+    .post-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--accent-ink);
+      letter-spacing: 0.06em;
+      margin-bottom: 0.35rem;
+      font-family: var(--font-en);
+    }
+    .post-title {
+      margin: 0;
+      font-size: clamp(1.1rem, 2.4vw, 1.3rem);
+      font-weight: 600;
+      line-height: 1.45;
+      letter-spacing: 0.01em;
+    }
+    .post-title a {
+      transition: color 0.15s;
+    }
+    .post-title a:hover { color: var(--accent-ink); }
+    .post.is-lead {
+      background: var(--bg-soft);
+      margin: 0 -0.85rem;
+      padding: 1.55rem 0.85rem;
+      border-bottom: 1px solid var(--line);
+    }
+    @media (min-width: 640px) {
+      .post.is-lead {
+        margin: 0;
+        padding: 1.75rem 1.15rem 1.75rem 0;
+        background: transparent;
+        border-left: 3px solid var(--accent);
+        padding-left: 1.15rem;
+      }
+    }
+    .post.is-lead .post-title {
+      font-size: clamp(1.25rem, 2.8vw, 1.5rem);
+      line-height: 1.4;
+    }
+    .post-excerpt {
+      margin: 0.55rem 0 0;
+      font-size: 0.925rem;
+      line-height: 1.8;
+      color: var(--ink-3);
+      max-width: 42em;
+    }
+    .empty-hint {
+      display: none;
+      padding: 2rem 0;
+      color: var(--ink-4);
+      font-size: 0.9rem;
+    }
+    .empty-hint.is-visible { display: block; }
+
+    /* ——— Sidebar ——— */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    @media (min-width: 900px) {
+      .sidebar {
+        position: sticky;
+        top: 1.5rem;
+      }
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      padding: 1.15rem 1.15rem 1.25rem;
+      background: var(--bg);
+    }
+    .panel-title {
+      margin: 0 0 0.65rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-family: var(--font-en);
+      color: var(--ink-3);
+    }
+    .panel p {
+      margin: 0;
+      font-size: 0.875rem;
+      line-height: 1.75;
+      color: var(--ink-2);
+    }
+    .panel ul {
+      margin: 0.65rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .panel li {
+      font-size: 0.8125rem;
+      color: var(--ink-3);
+      padding: 0.25rem 0;
+      border-top: 1px solid var(--line-soft);
+      line-height: 1.55;
+    }
+    .panel li:first-child { border-top: 0; padding-top: 0; }
+    .panel li strong {
+      display: block;
+      color: var(--ink-2);
+      font-weight: 500;
+      font-size: 0.8125rem;
+    }
+
+    .cta {
+      display: block;
+      margin-top: 1rem;
+      text-align: center;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: #fff;
+      background: var(--accent);
+      padding: 0.6rem 0.9rem;
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+    .cta:hover { background: var(--accent-ink); }
+
+    .social {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .social a {
+      font-size: 0.8125rem;
+      color: var(--ink-2);
+      font-family: var(--font-en);
+      border-bottom: 1px solid transparent;
+      width: fit-content;
+    }
+    .social a:hover {
+      color: var(--accent-ink);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ——— Footer ——— */
+    .site-footer {
+      margin-top: 3rem;
+      padding: 1.35rem 0 2.5rem;
+      border-top: 1px solid var(--line);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--ink-4);
+      font-family: var(--font-en);
+    }
+    .site-footer a:hover { color: var(--ink-2); }
+
+    @media (max-width: 480px) {
+      .masthead-body { padding: 1.4rem 0 1.15rem; }
+      .post.is-lead {
+        margin: 0 -0.25rem;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">设计提案 B · 仅预览 · 未上线 · <a href="./index.html">返回比较</a></div>
+
+  <div class="shell">
+    <header class="masthead">
+      <div class="masthead-top">
+        <a class="brand" href="https://sankyu.me/">sankyu<em>.</em>me</a>
+        <nav class="nav-links" aria-label="主导航">
+          <a class="is-active" href="#articles">文章</a>
+          <a href="https://sankyu.me/about">关于</a>
+        </nav>
+      </div>
+      <hr class="masthead-rule" />
+      <hr class="masthead-rule-thin" />
+
+      <div class="masthead-body">
+        <div class="identity">
+          <h1>三桥</h1>
+          <div class="en">Sankyu Tang · Personal writing</div>
+          <p class="lead">
+            阅读优先的个人博客。写 AI 实践、生活与旧日旅途；也保留一条清楚的合作入口——咨询、FDE 与一人公司相关话题，详见关于页。
+          </p>
+        </div>
+        <div class="desk-meta">
+          <strong>Guangzhou, CN</strong>
+          独立开发者 / FDE<br />
+          OPC · since 2024
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <main id="articles">
+        <div class="toolbar">
+          <h2 class="section-kicker">Latest writing</h2>
+          <div class="filters" role="group" aria-label="按标签筛选文章">
+            <button type="button" class="filter-btn" data-filter="all" aria-pressed="true">全部</button>
+            <button type="button" class="filter-btn" data-filter="AI" aria-pressed="false">AI</button>
+            <button type="button" class="filter-btn" data-filter="文章" aria-pressed="false">文章</button>
+          </div>
+        </div>
+
+        <ol class="posts">
+          <li class="post is-lead" data-tag="AI">
+            <time class="post-date" datetime="2026-11-09">2026.11.09</time>
+            <div>
+              <span class="post-tag">AI</span>
+              <h3 class="post-title">
+                <a href="https://sankyu.me/posts/ai-coding-week-48-prompts/">一个人加一个 AI 编程助手，一周做了什么：48 条指令的复盘</a>
+              </h3>
+              <p class="post-excerpt">
+                我用 AI 编程助手推进一款棋类学习 App 的一周复盘，讲六个可复用的做法：让 AI 先问清楚、把规则写进文档、用脚本防止漏改、看真实运行结果、给 AI 的错误设防线、管理上下文。
+              </p>
+            </div>
+          </li>
+
+          <li class="post" data-tag="文章">
+            <time class="post-date" datetime="2026-08-20">2026.08.20</time>
+            <div>
+              <span class="post-tag">文章</span>
+              <h3 class="post-title">
+                <a href="https://sankyu.me/posts/travel-in-qiaodao-ai-aa-4205/">在珠海淇澳岛，11个人把一笔4205元的账交给了AI</a>
+              </h3>
+              <p class="post-excerpt">
+                一次珠海淇澳岛的大学同学小聚，11个人把4205元的复杂AA账交给AI计算。账目算清了，关系更轻松，也让我意识到：AI不只服务于工作，也能帮我们处理生活里的琐碎，让人把时间留给真正重要的相聚。
+              </p>
+            </div>
+          </li>
+
+          <li class="post" data-tag="文章">
+            <time class="post-date" datetime="2013-02-02">2013.02.02</time>
+            <div>
+              <span class="post-tag">文章</span>
+              <h3 class="post-title">
+                <a href="https://sankyu.me/posts/travel-in-Hokkaido-japan/">[多图游记]冬天北海道这么大，我们偏要走这里</a>
+              </h3>
+              <p class="post-excerpt">
+                我们从广州飞去东京的途中，在空中遇到日本富士山。包括空姐都一起观望远处的富士山山顶。
+              </p>
+            </div>
+          </li>
+        </ol>
+        <p class="empty-hint" id="empty-hint" hidden>该标签下暂无文章。</p>
+        <p style="margin:1.25rem 0 0;font-size:0.8125rem;color:var(--ink-4);">
+          <a href="https://sankyu.me/posts/" style="color:var(--ink-3);border-bottom:1px solid var(--line);">查看全部文章 →</a>
+        </p>
+      </main>
+
+      <aside class="sidebar" aria-label="侧栏">
+        <section class="panel">
+          <h2 class="panel-title">Collaborate</h2>
+          <p>AI 咨询、FDE 落地、一人公司与独立产品——可聊主题见关于页，不作冷推销。</p>
+          <ul>
+            <li><strong>AI 咨询 / FDE</strong>工程经验落到小团队工作流</li>
+            <li><strong>一人公司</strong>方向、交付与产品生意</li>
+            <li><strong>前端与工程化</strong>选型、重构与带队</li>
+          </ul>
+          <a class="cta" href="https://sankyu.me/about">了解更多 →</a>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel-title">Elsewhere</h2>
+          <div class="social">
+            <a href="https://x.com/imsankyu" rel="noopener noreferrer" target="_blank">X · @imsankyu</a>
+            <a href="https://github.com/sankyutang" rel="noopener noreferrer" target="_blank">GitHub · sankyutang</a>
+            <a href="https://sankyu.me/about">About · sankyu.me/about</a>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <footer class="site-footer">
+      <span>© Sankyu Tang · Guangzhou</span>
+      <span>
+        <a href="https://sankyu.me/">线上站点</a>
+        · 提案 B · 编辑式双栏
+      </span>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var buttons = document.querySelectorAll(".filter-btn");
+      var posts = document.querySelectorAll(".post");
+      var empty = document.getElementById("empty-hint");
+
+      function applyFilter(tag) {
+        var visible = 0;
+        posts.forEach(function (post) {
+          var match = tag === "all" || post.getAttribute("data-tag") === tag;
+          post.hidden = !match;
+          if (match) visible += 1;
+        });
+        if (empty) {
+          empty.hidden = visible > 0;
+          empty.classList.toggle("is-visible", visible === 0);
+        }
+      }
+
+      buttons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var tag = btn.getAttribute("data-filter") || "all";
+          buttons.forEach(function (b) {
+            b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+          });
+          applyFilter(tag);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

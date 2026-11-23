@@ -3,6 +3,7 @@ import { planFullSite, planPaths, type Op } from './affectedPaths'
 import { renderKey } from './render'
 import { deleteObject, hashBody, putObject } from './r2'
 import { keyToUrl, purgeUrls } from './purge'
+import { publishSiteAssets } from './siteAssets'
 import {
   listPages,
   listPodcasts,
@@ -22,6 +23,7 @@ export interface PublishReport {
   rendered: string[]
   removed: string[]
   failed: { key: string; error: string }[]
+  assets?: string[]
   purged: boolean
   purgeError?: string
 }
@@ -104,5 +106,18 @@ export async function publishFullSite(ctx: PublishContext): Promise<PublishRepor
     videos: videos.map((v) => v.slug),
     pages: pages.map((p) => p.slug),
   })
-  return processPlan(ctx, plan)
+  const report = await processPlan(ctx, plan)
+  try {
+    const assets = await publishSiteAssets(ctx.bucket)
+    report.assets = assets.uploaded
+    const assetUrls = assets.uploaded.map((k) => keyToUrl(ctx.env.SITE_BASE_URL, k))
+    const purgeResult = await purgeUrls(ctx.env, assetUrls)
+    if (!purgeResult.ok && !report.purgeError) {
+      report.purgeError = purgeResult.error
+      report.purged = false
+    }
+  } catch (err) {
+    report.failed.push({ key: 'site-assets', error: (err as Error).message })
+  }
+  return report
 }

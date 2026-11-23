@@ -17,8 +17,9 @@ import type {
   Profile,
   SocialLink,
 } from './data-source/types'
+import { SITE_POSITIONING, firstNonEmpty } from './seo/defaults'
 
-const FALLBACK_COLOR = '#c8553d'
+const FALLBACK_COLOR = '#2e6ceb'
 
 /**
  * Legacy uploads used ASSET_BASE_URL=`…/assets` while storing R2 keys under
@@ -168,27 +169,55 @@ export function mediaFeed(podcasts: PodcastRowH[], videos: VideoRowH[]): MediaIt
   return items.sort((a, b) => (a.date < b.date ? 1 : -1))
 }
 
+/** Natural public bio — not design-spec copy. Settings fields win when present. */
+const DEFAULT_INTRO_ZH =
+  '广州。2024 年起做一人公司：独立开发与 FDE，也写 AI 实践与生活。前大厂前端。'
+
+const DEFAULT_SOCIAL: SocialLink[] = [
+  { id: 'x', label: 'X · @imsankyu', url: 'https://x.com/imsankyu' },
+  { id: 'github', label: 'GitHub · sankyutang', url: 'https://github.com/sankyutang' },
+]
+
 export function adaptProfile(s: SiteSettings): Profile {
+  // Keep approved About intro wording; do not substitute SEO marketing copy.
+  const intro = firstNonEmpty(s.introBody, s.siteDescription, DEFAULT_INTRO_ZH)
   return {
-    name_zh: '三桥',
-    name_en: 'Sankyu Tang',
+    name_zh: SITE_POSITIONING.nameZh,
+    name_en: SITE_POSITIONING.nameEn,
     handle: 'sankyu',
-    title_zh: '独立开发者 · 一人公司',
-    title_en: 'Indie Maker',
-    intro_zh: s.introBody || s.siteDescription || '',
+    title_zh: firstNonEmpty(s.introHeadline, SITE_POSITIONING.titleZh),
+    title_en: SITE_POSITIONING.titleEn,
+    intro_zh: intro,
     intro_en: '',
-    now_zh: s.introBody || '',
+    // No separate "now" field in site_settings yet — avoid duplicating intro in NowCard.
+    now_zh: '',
     now_en: '',
-    location: 'Guangzhou, CN',
-    email: 'hi@sankyu.me',
+    location: SITE_POSITIONING.location,
+    email: SITE_POSITIONING.email,
     avatar_initial: 'S',
   }
 }
 
 export function adaptSocial(s: SiteSettings): SocialLink[] {
-  return (s.socialLinks || []).map((l) => ({
-    id: socialIdFromPlatform(l.platform),
-    label: l.platform,
-    url: l.url,
-  }))
+  const fromSettings = (s.socialLinks || [])
+    .filter((l) => l.url && l.url !== '#')
+    .map((l) => ({
+      id: socialIdFromPlatform(l.platform),
+      label: l.platform,
+      url: l.url,
+    }))
+  if (fromSettings.length === 0) return DEFAULT_SOCIAL
+
+  const ids = new Set(fromSettings.map((l) => l.id))
+  const merged = [...fromSettings]
+  for (const fallback of DEFAULT_SOCIAL) {
+    if (!ids.has(fallback.id)) merged.push(fallback)
+  }
+  return merged.map((l) => {
+    if (l.id === 'x' && (!l.label || l.label === 'X')) return { ...l, label: 'X · @imsankyu' }
+    if (l.id === 'github' && (!l.label || /^github$/i.test(l.label))) {
+      return { ...l, label: 'GitHub · sankyutang' }
+    }
+    return l
+  })
 }

@@ -1,0 +1,24 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/system.css">
+<link rel="stylesheet" href="assets/ui/cards.css">
+<link rel="stylesheet" href="assets/motion/motion.css">
+<link rel="stylesheet" href="assets/backgrounds/backgrounds.css">
+<link rel="stylesheet" href="assets/layout/layout.css">
+<link rel="stylesheet" href="assets/icons/icon.css">
+<!-- <html lang="en" data-radius="soft">; keep this <style> after the links: layout.css resets --ly-scale -->
+<style>
+:root {
+  --p-bg: #a6b3bc; --p-surface: #b2bdc5; --p-ink: #1c1c1c; --p-muted: #38424a;
+  --p-accent: #2c3620; --p-accent-ink: #e3e2da; --p-action: #2c3620; --p-action-ink: #e3e2da;
+  --p-inv-bg: #2c3620; --p-inv-surface: #39422d; --p-inv-ink: #ffffff; --p-inv-muted: #a8ada3;
+  --p-inv-accent: #ffffff; --p-inv-accent-ink: #2c3620; --p-inv-action: #ffffff; --p-inv-action-ink: #2c3620;
+  --font-display: "Schibsted Grotesk", system-ui, sans-serif;
+  --font-text: "Schibsted Grotesk", system-ui, sans-serif;
+  --display-weight: 400;
+  --display-tracking: -0.035em;
+  --display-tracking-xl: -0.042em;
+  --ly-scale: 0.98;
+}
+</style>
