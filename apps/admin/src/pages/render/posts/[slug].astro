@@ -67,18 +67,20 @@ function formatDate(iso: string): string {
   ogImage={ogImage}
 >
   <DetailShell
-    kicker={(post.tag || '文章') + ' · ' + formatDate(post.date)}
+    kicker={post.tag || '文章'}
     zh={post.title_zh}
     en={post.title_en || undefined}
+    summary={post.excerpt || undefined}
+    authorName="三桥"
     coverSrc={post.cover_src}
     coverAlt={post.title_zh}
     backHref="/posts"
     backLabel="文章列表"
     shareUrl={`${siteUrl}/posts/${slug}`}
     metaFields={[
-      { label: 'DATE', value: formatDate(post.date) },
-      { label: 'READING', value: post.reading || '—' },
-      { label: 'TAG', value: post.tag || '文章' },
+      { label: '日期', value: formatDate(post.date) },
+      { label: '阅读', value: post.reading || '—' },
+      { label: '标签', value: post.tag || '文章' },
     ]}
     toc={toc.length ? toc : null}
     hasRelated={related.length > 0}

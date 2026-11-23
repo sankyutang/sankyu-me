@@ -4,7 +4,7 @@ import { Icon } from './icons'
 import type { SocialLink } from '@/lib/data-source/types'
 
 /* ---------- COVER ---------- */
-const COVER_PALETTE = ['#c41e1e', '#5a5a5a', '#3a6b46', '#1e3a5f', '#6b5a3a', '#5a4f72']
+const COVER_PALETTE = ['#2e6ceb', '#5a5a5a', '#3a6b46', '#1e3a5f', '#6b5a3a', '#4a5568']
 function pickCoverColor(seed?: string) {
   let h = 0
   for (const c of String(seed || '?')) h = (h * 31 + c.charCodeAt(0)) >>> 0

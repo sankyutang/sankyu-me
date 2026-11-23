@@ -18,9 +18,9 @@ function formatDate(iso: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return iso.slice(0, 10)
   const y = d.getUTCFullYear()
-  const m = String(d.getUTCMonth() + 1).padStart(2, '0')
-  const day = String(d.getUTCDate()).padStart(2, '0')
-  return `${y}.${m}.${day}`
+  const m = d.getUTCMonth() + 1
+  const day = d.getUTCDate()
+  return `${y}年${m}月${day}日`
 }
 ---
 
@@ -30,6 +30,7 @@ function formatDate(iso: string): string {
     en="文章"
     blurb="写给一年后还会读到这页的自己。中文为主，偶尔英文。"
     count={posts.length}
+    wide
   >
     <div class="flex flex-wrap items-center gap-1.5 mb-6" role="group" aria-label="按标签筛选">
       <button type="button" class="filter-btn is-active post-chip" data-filter="全部" aria-pressed="true">全部</button>
@@ -41,26 +42,32 @@ function formatDate(iso: string): string {
     {posts.length === 0 ? (
       <p style="color: var(--ink-500);">暂无已发布文章。</p>
     ) : (
-      <ol class="list-none m-0 p-0 border-t" style="border-color: var(--paper-300);" id="posts-list">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-8" id="posts-list">
         {posts.map((p) => (
-          <li class="post-item py-5 border-b" style="border-color: var(--paper-300);" data-tag={p.tag || '文章'}>
-            <div class="grid sm:grid-cols-[6.5rem_minmax(0,1fr)] gap-2 sm:gap-5">
-              <time class="font-en text-[0.75rem] pt-1" style="color: var(--ink-300);" datetime={p.date}>
-                {formatDate(p.date)}
-              </time>
-              <div class="min-w-0">
-                <div class="text-[0.7rem] font-en font-medium mb-1.5" style="color: var(--accent-soft);">{p.tag || '文章'}</div>
-                <h2 class="m-0 font-display text-[1.15rem] md:text-[1.25rem] leading-[1.45]" style="overflow-wrap: anywhere;">
-                  <a href={postHref(p.id)} class="hover:text-[var(--accent-soft)]">{p.title_zh}</a>
-                </h2>
-                {p.excerpt && (
-                  <p class="mt-2 mb-0 text-[0.9rem]" style="color: var(--ink-500); line-height: 1.8;">{p.excerpt}</p>
-                )}
-              </div>
-            </div>
-          </li>
+          <article class="post-item min-w-0" data-tag={p.tag || '文章'}>
+            <a class="cover-frame" href={postHref(p.id)}>
+              {p.cover_src ? (
+                <img src={p.cover_src} width="800" height="450" alt="" loading="lazy" />
+              ) : (
+                <div class="cover-fallback" aria-hidden="true">
+                  <p class="cf-title">{p.title_zh}</p>
+                  <span class="cf-note">排版封面 · 本文无独立封面图</span>
+                </div>
+              )}
+            </a>
+            <p class="mt-3 mb-1 text-[0.8rem]" style="color: var(--accent);">{p.tag || '文章'}</p>
+            <h2 class="m-0 font-display font-bold text-[1.05rem] leading-[1.4]" style="overflow-wrap: anywhere;">
+              <a href={postHref(p.id)} class="no-underline" style="color: var(--ink-900);">{p.title_zh}</a>
+            </h2>
+            {p.excerpt && (
+              <p class="mt-2 mb-0 text-[0.9rem]" style="color: var(--ink-500); line-height: 1.7; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                {p.excerpt}
+              </p>
+            )}
+            <p class="mt-2.5 mb-0 text-[0.8rem]" style="color: var(--ink-300);">{formatDate(p.date)}</p>
+          </article>
         ))}
-      </ol>
+      </div>
     )}
     <p id="posts-filter-empty" class="py-8 text-[0.9rem]" style="color: var(--ink-500); display:none;" hidden>该标签下暂无文章。</p>
   </ListShell>

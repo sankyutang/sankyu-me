@@ -11,15 +11,15 @@ interface Props {
 const { kicker, en, blurb, count = null, countLabel = 'TOTAL', wide = false } = Astro.props
 ---
 
-<div class={(wide ? 'max-w-6xl' : 'max-w-5xl') + ' mx-auto px-5 md:px-8 pt-12 md:pt-14 pb-16'}>
+<div class={(wide ? 'max-w-[67.5rem]' : 'max-w-3xl') + ' mx-auto px-5 md:px-8 pt-10 md:pt-12 pb-16'}>
   <header class="mb-8 md:mb-10 grid md:grid-cols-[1fr_auto] gap-5 md:items-end">
     <div>
       <div class="kicker mb-2">{kicker}</div>
-      <h1 class="font-display text-[2rem] md:text-[2.5rem] leading-[1.15] tracking-tight" style="color: var(--ink-900);">
+      <h1 class="font-display font-bold text-[1.85rem] md:text-[2.25rem] leading-[1.2] tracking-tight" style="color: var(--ink-900);">
         {en}
       </h1>
       {blurb && (
-        <p class="mt-3 text-[0.95rem] md:text-[1rem] max-w-[40em]" style="color: var(--ink-700); line-height: 1.8;">
+        <p class="mt-3 text-[0.95rem] md:text-[1rem] max-w-[40em]" style="color: var(--ink-500); line-height: 1.8;">
           {blurb}
         </p>
       )}

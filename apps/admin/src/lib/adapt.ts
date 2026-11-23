@@ -18,7 +18,7 @@ import type {
   SocialLink,
 } from './data-source/types'
 
-const FALLBACK_COLOR = '#c41e1e'
+const FALLBACK_COLOR = '#2e6ceb'
 
 /**
  * Legacy uploads used ASSET_BASE_URL=`…/assets` while storing R2 keys under

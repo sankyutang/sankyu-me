@@ -10,6 +10,7 @@
   "scripts": {
     "dev:admin": "npm run dev -w @sankyume/admin",
     "build:admin": "npm run build -w @sankyume/admin",
+    "build": "npm run build:admin",
     "dev:worker": "npm run dev -w @sankyume/site-worker",
     "deploy:worker": "npm run deploy -w @sankyume/site-worker",
     "import-content": "tsx scripts/import-content.ts",
