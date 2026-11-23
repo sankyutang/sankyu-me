@@ -1,9 +1,9 @@
 import { putObject } from './r2'
-import { FAVICON_ICO_B64, OG_DEFAULT_PNG_B64 } from './siteAssetBytes'
+import { AVATAR_PNG_B64, FAVICON_ICO_B64, OG_DEFAULT_PNG_B64 } from './siteAssetBytes'
 
 /**
  * Bundled public site assets that must exist on the R2-published origin
- * (favicon / default OG). Uploaded alongside HTML/XML on full republish.
+ * (favicon / default OG / blog avatar). Uploaded alongside HTML/XML on full republish.
  * Bodies are embedded so Cloudflare Pages SSR does not need node:fs.
  */
 
@@ -45,6 +45,12 @@ export const SITE_ASSET_SPECS: SiteAssetSpec[] = [
     contentType: 'image/png',
     cacheControl: 'public, max-age=86400, s-maxage=604800',
     body: b64ToBytes(OG_DEFAULT_PNG_B64),
+  },
+  {
+    key: 'images/avatar.png',
+    contentType: 'image/png',
+    cacheControl: 'public, max-age=86400, s-maxage=604800',
+    body: b64ToBytes(AVATAR_PNG_B64),
   },
 ]
 

@@ -1,6 +1,7 @@
 ---
 import '@/styles/paper.css'
 import { SocialRow } from '@/components/react/primitives'
+import SiteAvatar from '@/components/SiteAvatar.astro'
 import { adaptProfile, adaptSocial } from '@/lib/adapt'
 import type { SiteSettings } from '@/lib/db/types'
 import { SITE_POSITIONING, firstNonEmpty } from '@/lib/seo/defaults'
@@ -91,11 +92,10 @@ function isActive(href: string): boolean {
       <div class="site-header-bar max-w-[67.5rem] mx-auto px-5 md:px-8 min-h-16 grid grid-cols-[2.5rem_1fr_auto] items-center gap-3">
         <a
           href="/"
-          class="mark-circle inline-flex items-center justify-center w-8 h-8 rounded-full text-[0.8rem] font-bold no-underline"
-          style="background: var(--ink-900); color: #fff;"
+          class="mark-circle inline-flex items-center justify-center no-underline"
           aria-label={`${siteName} 首页`}
         >
-          桥
+          <SiteAvatar size="2rem" />
         </a>
         <a
           href="/"

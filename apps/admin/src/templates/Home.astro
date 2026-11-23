@@ -1,6 +1,7 @@
 ---
 import PaperLayout from '@/layouts/PaperLayout.astro'
 import { SocialRow } from '@/components/react/primitives'
+import SiteAvatar from '@/components/SiteAvatar.astro'
 import { pageHref, postHref } from '@/lib/links'
 import { adaptProfile, adaptSocial, adaptPost, adaptPage } from '@/lib/adapt'
 import type { Page, Podcast, Post, Product, SiteSettings, Video } from '@/lib/db/types'
@@ -136,8 +137,8 @@ function formatShortDate(iso: string): string {
 
     <aside class="flex flex-col gap-8 lg:sticky lg:top-24" aria-label="关于作者">
       <section>
-        <div class="w-12 h-12 rounded-full mb-3 overflow-hidden" aria-hidden="true">
-          <div class="avatar-mark text-[1rem]">桥</div>
+        <div class="mb-3">
+          <SiteAvatar size="3rem" />
         </div>
         <h2 class="m-0 font-display font-bold text-[1.05rem]" style="color: var(--ink-900);">{profile.name_zh}</h2>
         <p class="mt-2 mb-0 text-[0.88rem]" style="color: var(--ink-500); line-height: 1.7;">

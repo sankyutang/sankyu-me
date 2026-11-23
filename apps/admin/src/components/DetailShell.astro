@@ -1,4 +1,6 @@
 ---
+import SiteAvatar from '@/components/SiteAvatar.astro'
+
 interface MetaField {
   label: string
   value: string | number
@@ -92,13 +94,7 @@ const dateDisplay = dateField ? String(dateField.value) : ''
           </p>
         )}
         <div class="mt-5 flex items-center gap-2.5 text-[0.9rem]" style="color: var(--ink-500);">
-          <span
-            class="inline-flex items-center justify-center w-7 h-7 rounded-full text-[0.7rem] font-bold"
-            style="background: var(--ink-900); color: #fff;"
-            aria-hidden="true"
-          >
-            桥
-          </span>
+          <SiteAvatar size="1.75rem" />
           <span>{authorName}</span>
           {dateDisplay && (
             <>
